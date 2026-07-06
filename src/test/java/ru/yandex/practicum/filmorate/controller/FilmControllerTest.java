@@ -59,7 +59,7 @@ public class FilmControllerTest {
         assertThrows(
                 ValidationException.class,
                 () -> controller.create(film),
-                "Фильм с описанием длиннее 200 символов должен выбрасывать ValidationException"        );
+                "Фильм с описанием длиннее 200 символов должен выбрасывать ValidationException");
     }
 
     @Test
@@ -157,8 +157,10 @@ public class FilmControllerTest {
 
         Film updateFilm = controller.update(newFilm);
 
-        assertEquals(1L, updateFilm.getId(), "Первому фильму должен быть присвоен id = 1");        assertEquals("Начало", updateFilm.getName(), "Название фильма должно измениться");
-        assertEquals("Новое описание", updateFilm.getDescription(), "Описание фильма должно измениться");        assertEquals(LocalDate.of(2010, 1, 8), updateFilm.getReleaseDate(), "Дата релиза должна измениться");
+        assertEquals(idFilm, updateFilm.getId(), "Id фильма не должен измениться при обновлении");
+        assertEquals("Начало", updateFilm.getName(), "Название фильма должно измениться");
+        assertEquals("Новое описание", updateFilm.getDescription(), "Описание фильма должно измениться");
+        assertEquals(LocalDate.of(2010, 1, 8), updateFilm.getReleaseDate(), "Дата релиза должна измениться");
         assertEquals(120, updateFilm.getDuration(), "Продолжительность должна измениться");
     }
 
