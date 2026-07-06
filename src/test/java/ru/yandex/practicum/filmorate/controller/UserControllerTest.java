@@ -81,7 +81,7 @@ public class UserControllerTest {
     }
 
     @Test
-    void testCreateUserWhenLoginContainsSpaceThrowsValidationException(){
+    void testCreateUserWhenLoginContainsSpaceThrowsValidationException() {
         UserController controller = new UserController();
 
         User user = new User();
