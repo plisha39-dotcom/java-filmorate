@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,7 +28,7 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film create(@RequestBody Film film) {
+    public Film create(@Valid @RequestBody Film film) {
         validateFilm(film);
         film.setId(getNextId());
         films.put(film.getId(), film);
@@ -36,7 +37,7 @@ public class FilmController {
     }
 
     @PutMapping
-    public Film update(@RequestBody Film newFilm) {
+    public Film update(@Valid @RequestBody Film newFilm) {
         if (newFilm == null) {
             log.warn("Ошибка валидации: пустой фильм");
             throw new ValidationException("Фильм не может быть пустым");

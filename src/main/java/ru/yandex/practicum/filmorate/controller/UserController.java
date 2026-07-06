@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,7 +28,7 @@ public class UserController {
     }
 
     @PostMapping
-    public User create(@RequestBody User user) {
+    public User create(@Valid @RequestBody User user) {
         validateUser(user);
         user.setId(getNextId());
         users.put(user.getId(), user);
@@ -36,7 +37,7 @@ public class UserController {
     }
 
     @PutMapping
-    public User update(@RequestBody User newUser) {
+    public User update(@Valid @RequestBody User newUser) {
         if (newUser == null) {
             log.warn("Ошибка валидации: пустой пользователь");
             throw new ValidationException("Пользователь не может быть пустым");
