@@ -37,6 +37,10 @@ public class FilmController {
 
     @PutMapping
     public Film update(@RequestBody Film newFilm) {
+        if (newFilm == null) {
+            log.warn("Ошибка валидации: пустой фильм");
+            throw new ValidationException("Фильм не может быть пустым");
+        }
         if (newFilm.getId() == null) {
             log.warn("Ошибка валидации: отсутствует Id фильма");
             throw new ValidationException("Id должен быть указан!");
@@ -46,9 +50,7 @@ public class FilmController {
             log.warn("Ошибка обновления: фильм с id {} не найден", newFilm.getId());
             throw new ValidationException("Фильм с таким id не найден");
         }
-
         validateFilm(newFilm);
-
         films.put(newFilm.getId(), newFilm);
         log.info("Фильм обновлен: id={}", newFilm.getId());
         return newFilm;
@@ -60,6 +62,10 @@ public class FilmController {
     }
 
     private void validateFilm(Film film) {
+        if (film == null) {
+            log.warn("Ошибка валидации: пустой фильм");
+            throw new ValidationException("Фильм не может быть пустым");
+        }
         if (film.getName() == null || film.getName().isBlank()) {
             log.warn("Ошибка валидации: название пустое");
             throw new ValidationException("Название не может быть пустым!");
