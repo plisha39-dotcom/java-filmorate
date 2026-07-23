@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -21,20 +22,21 @@ import java.util.Map;
 @RequestMapping("/films")
 @Slf4j
 public class FilmController {
-    private final Map<Long, Film> films = new HashMap<>();
+    private final FilmStorage filmStorage;
+
+    public FilmController(FilmStorage filmStorage) {
+        this.filmStorage = filmStorage;
+    }
 
     @GetMapping
     public Collection<Film> allFilms() {
-        return films.values();
+        return filmStorage.findAll();
     }
 
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
         validateFilm(film);
-        film.setId(getNextId());
-        films.put(film.getId(), film);
-        log.info("Фильм добавлен: id={}", film.getId());
-        return film;
+        return filmStorage.create(film);
     }
 
     @PutMapping
@@ -42,25 +44,13 @@ public class FilmController {
         if (newFilm == null) {
             log.warn("Ошибка валидации: пустой фильм");
             throw new ValidationException("Фильм не может быть пустым");
-        }
+        } // оставляем
         if (newFilm.getId() == null) {
             log.warn("Ошибка валидации: отсутствует Id фильма");
             throw new ValidationException("Id должен быть указан!");
-        }
-        Film oldFilm = films.get(newFilm.getId());
-        if (oldFilm == null) {
-            log.warn("Ошибка обновления: фильм с id {} не найден", newFilm.getId());
-            throw new NotFoundException("Фильм с таким id не найден");
-        }
+        } // оставляем
         validateFilm(newFilm);
-        films.put(newFilm.getId(), newFilm);
-        log.info("Фильм обновлен: id={}", newFilm.getId());
-        return newFilm;
-    }
-
-    private long getNextId() {
-        long currentMaxId = films.keySet().stream().mapToLong(id -> id).max().orElse(0);
-        return ++currentMaxId;
+        return filmStorage.update(newFilm);
     }
 
     private void validateFilm(Film film) {
