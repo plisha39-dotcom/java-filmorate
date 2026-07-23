@@ -8,33 +8,32 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 
 @RestController
 @RequestMapping("/users")
 @Slf4j
 public class UserController {
-    private final Map<Long, User> users = new HashMap<>();
+    private final UserStorage userStorage;
+
+    public UserController(UserStorage userStorage) {
+        this.userStorage = userStorage;
+    }
 
     @GetMapping
     public Collection<User> allUsers() {
-        return users.values();
+        return userStorage.findAll();
     }
 
     @PostMapping
     public User create(@Valid @RequestBody User user) {
         validateUser(user);
-        user.setId(getNextId());
-        users.put(user.getId(), user);
-        log.info("Пользователь добавлен: id={}", user.getId());
-        return user;
+        return userStorage.create(user);
     }
 
     @PutMapping
@@ -47,20 +46,8 @@ public class UserController {
             log.warn("Ошибка валидации: отсутствует Id пользователя");
             throw new ValidationException("Id должен быть указан");
         }
-        User oldUser = users.get(newUser.getId());
-        if (oldUser == null) {
-            log.warn("Ошибка обновления: пользователь с id {} не найден", newUser.getId());
-            throw new NotFoundException("Пользователь с таким id не найден");
-        }
         validateUser(newUser);
-        users.put(newUser.getId(), newUser);
-        log.info("Пользователь обновлен: id={}", newUser.getId());
-        return newUser;
-    }
-
-    private long getNextId() {
-        long currentMaxId = users.keySet().stream().mapToLong(id -> id).max().orElse(0);
-        return ++currentMaxId;
+        return userStorage.update(newUser);
     }
 
     private void validateUser(User user) {

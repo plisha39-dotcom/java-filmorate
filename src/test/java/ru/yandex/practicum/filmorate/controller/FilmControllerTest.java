@@ -3,6 +3,8 @@ package ru.yandex.practicum.filmorate.controller;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 
 import java.time.LocalDate;
 
@@ -12,7 +14,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 public class FilmControllerTest {
     @Test
     void testCreateFilmWhenFilmIsValidReturnsFilm() {
-        FilmController controller = new FilmController();
+        FilmStorage filmStorage = new InMemoryFilmStorage();
+        FilmController controller = new FilmController(filmStorage);
 
         Film film = new Film();
         film.setName("Интерстеллар");
@@ -31,7 +34,8 @@ public class FilmControllerTest {
 
     @Test
     void testCreateFilmWhenNameIsBlankThrowsValidationException() {
-        FilmController controller = new FilmController();
+        FilmStorage filmStorage = new InMemoryFilmStorage();
+        FilmController controller = new FilmController(filmStorage);
 
         Film film = new Film();
         film.setName("");
@@ -48,7 +52,8 @@ public class FilmControllerTest {
 
     @Test
     void testCreateFilmWhenDescriptionLengthIs201ThrowsValidationException() {
-        FilmController controller = new FilmController();
+        FilmStorage filmStorage = new InMemoryFilmStorage();
+        FilmController controller = new FilmController(filmStorage);
 
         Film film = new Film();
         film.setName("Интерстеллар");
@@ -64,7 +69,8 @@ public class FilmControllerTest {
 
     @Test
     void testCreateFilmWhenDescriptionLengthIs200ReturnsFilm() {
-        FilmController controller = new FilmController();
+        FilmStorage filmStorage = new InMemoryFilmStorage();
+        FilmController controller = new FilmController(filmStorage);
 
         Film film = new Film();
         film.setName("Интерстеллар");
@@ -83,7 +89,8 @@ public class FilmControllerTest {
 
     @Test
     void testCreateFilmWhenReleaseDateIs18951228ReturnsFilm() {
-        FilmController controller = new FilmController();
+        FilmStorage filmStorage = new InMemoryFilmStorage();
+        FilmController controller = new FilmController(filmStorage);
 
         Film film = new Film();
         film.setName("Интерстеллар");
@@ -102,7 +109,8 @@ public class FilmControllerTest {
 
     @Test
     void testCreateFilmWhenReleaseDateBefore18951228ThrowsValidationException() {
-        FilmController controller = new FilmController();
+        FilmStorage filmStorage = new InMemoryFilmStorage();
+        FilmController controller = new FilmController(filmStorage);
 
         Film film = new Film();
         film.setName("Интерстеллар");
@@ -119,7 +127,8 @@ public class FilmControllerTest {
 
     @Test
     void testCreateFilmWhenDurationIsZeroThrowsValidationException() {
-        FilmController controller = new FilmController();
+        FilmStorage filmStorage = new InMemoryFilmStorage();
+        FilmController controller = new FilmController(filmStorage);
 
         Film film = new Film();
         film.setName("Интерстеллар");
@@ -136,7 +145,8 @@ public class FilmControllerTest {
 
     @Test
     void testUpdateFilmWhenFilmExistsReturnsUpdatedFilm() {
-        FilmController controller = new FilmController();
+        FilmStorage filmStorage = new InMemoryFilmStorage();
+        FilmController controller = new FilmController(filmStorage);
 
         Film film = new Film();
         film.setName("Интерстеллар");
@@ -166,7 +176,8 @@ public class FilmControllerTest {
 
     @Test
     void testCreateFilmWhenFilmIsNullThrowsValidationException() {
-        FilmController controller = new FilmController();
+        FilmStorage filmStorage = new InMemoryFilmStorage();
+        FilmController controller = new FilmController(filmStorage);
 
         assertThrows(
                 ValidationException.class,
