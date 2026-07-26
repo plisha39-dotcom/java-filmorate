@@ -1,8 +1,10 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -12,11 +14,19 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class UserControllerTest {
+    UserStorage userStorage;
+    UserController controller;
+    UserService userService;
+
+    @BeforeEach
+    void setUp() {
+        userStorage = new InMemoryUserStorage();
+        userService = new UserService(userStorage);
+        controller = new UserController(userStorage, userService);
+    }
+
     @Test
     void testCreateUserWhenUserIsValidReturnsUser() {
-        UserStorage userStorage = new InMemoryUserStorage();
-        UserController controller = new UserController(userStorage);
-
         User user = new User();
         user.setName("Борис");
         user.setLogin("BOR");
@@ -34,9 +44,6 @@ public class UserControllerTest {
 
     @Test
     void testCreateUserWhenEmailIsBlankThrowsValidationException() {
-        UserStorage userStorage = new InMemoryUserStorage();
-        UserController controller = new UserController(userStorage);
-
         User user = new User();
         user.setName("Борис");
         user.setLogin("BOR");
@@ -52,9 +59,6 @@ public class UserControllerTest {
 
     @Test
     void testCreateUserWhenEmailWithoutAtThrowsValidationException() {
-        UserStorage userStorage = new InMemoryUserStorage();
-        UserController controller = new UserController(userStorage);
-
         User user = new User();
         user.setName("Борис");
         user.setLogin("BOR");
@@ -70,9 +74,6 @@ public class UserControllerTest {
 
     @Test
     void testCreateUserWhenLoginIsBlankThrowsValidationException() {
-        UserStorage userStorage = new InMemoryUserStorage();
-        UserController controller = new UserController(userStorage);
-
         User user = new User();
         user.setName("Борис");
         user.setLogin("");
@@ -88,9 +89,6 @@ public class UserControllerTest {
 
     @Test
     void testCreateUserWhenLoginContainsSpaceThrowsValidationException() {
-        UserStorage userStorage = new InMemoryUserStorage();
-        UserController controller = new UserController(userStorage);
-
         User user = new User();
         user.setName("Борис");
         user.setLogin("B R");
@@ -106,9 +104,6 @@ public class UserControllerTest {
 
     @Test
     void testCreateUserWhenNameIsBlankUsesLoginAsName() {
-        UserStorage userStorage = new InMemoryUserStorage();
-        UserController controller = new UserController(userStorage);
-
         User user = new User();
         user.setName("");
         user.setLogin("BOR");
@@ -126,8 +121,6 @@ public class UserControllerTest {
 
     @Test
     void testCreateUserWhenBirthdayIsTodayReturnsUser() {
-        UserStorage userStorage = new InMemoryUserStorage();
-        UserController controller = new UserController(userStorage);
         LocalDate today = LocalDate.now();
 
         User user = new User();
@@ -147,9 +140,6 @@ public class UserControllerTest {
 
     @Test
     void testCreateUserWhenBirthdayIsInFutureThrowsValidationException() {
-        UserStorage userStorage = new InMemoryUserStorage();
-        UserController controller = new UserController(userStorage);
-
         User user = new User();
         user.setName("Борис");
         user.setLogin("BOR");
@@ -165,9 +155,6 @@ public class UserControllerTest {
 
     @Test
     void testUpdateUserWhenUserExistsReturnsUpdatedUser() {
-        UserStorage userStorage = new InMemoryUserStorage();
-        UserController controller = new UserController(userStorage);
-
         User user = new User();
         user.setName("Борис");
         user.setLogin("BOR");
@@ -196,9 +183,6 @@ public class UserControllerTest {
 
     @Test
     void testCreateUserWhenUserIsNullThrowsValidationException() {
-        UserStorage userStorage = new InMemoryUserStorage();
-        UserController controller = new UserController(userStorage);
-
         assertThrows(
                 ValidationException.class,
                 () -> controller.create(null),
@@ -208,9 +192,6 @@ public class UserControllerTest {
 
     @Test
     void testUpdateUserWhenIdIsNullThrowsValidationException() {
-        UserStorage userStorage = new InMemoryUserStorage();
-        UserController controller = new UserController(userStorage);
-
         User user = new User();
         user.setName("Борис");
         user.setLogin("BOR");

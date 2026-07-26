@@ -54,6 +54,17 @@ public class UserService {
         return userStorage.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
     }
+
+    public List<User> getFriends(Long userId) {
+        User user = getUserById(userId);
+        Set<Long> friendsId = user.getFriends();
+        List<User> friends = new ArrayList<>();
+        for (Long friendId : friendsId) {
+            User friend = getUserById(friendId);
+            friends.add(friend);
+        }
+        return friends;
+    }
 }
 
 

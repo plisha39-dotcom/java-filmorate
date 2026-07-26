@@ -1,10 +1,14 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 
@@ -12,11 +16,21 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class FilmControllerTest {
+    private FilmStorage filmStorage;
+    private UserStorage userStorage;
+    private FilmService filmService;
+    private FilmController controller;
+
+    @BeforeEach
+    void setUp() {
+        filmStorage = new InMemoryFilmStorage();
+        userStorage = new InMemoryUserStorage();
+        filmService = new FilmService(userStorage, filmStorage);
+        controller = new FilmController(filmStorage, filmService);
+    }
+
     @Test
     void testCreateFilmWhenFilmIsValidReturnsFilm() {
-        FilmStorage filmStorage = new InMemoryFilmStorage();
-        FilmController controller = new FilmController(filmStorage);
-
         Film film = new Film();
         film.setName("Интерстеллар");
         film.setDescription("Фантастический фильм");
@@ -34,9 +48,6 @@ public class FilmControllerTest {
 
     @Test
     void testCreateFilmWhenNameIsBlankThrowsValidationException() {
-        FilmStorage filmStorage = new InMemoryFilmStorage();
-        FilmController controller = new FilmController(filmStorage);
-
         Film film = new Film();
         film.setName("");
         film.setDescription("Фантастический фильм");
@@ -52,9 +63,6 @@ public class FilmControllerTest {
 
     @Test
     void testCreateFilmWhenDescriptionLengthIs201ThrowsValidationException() {
-        FilmStorage filmStorage = new InMemoryFilmStorage();
-        FilmController controller = new FilmController(filmStorage);
-
         Film film = new Film();
         film.setName("Интерстеллар");
         film.setDescription("A".repeat(201));
@@ -69,9 +77,6 @@ public class FilmControllerTest {
 
     @Test
     void testCreateFilmWhenDescriptionLengthIs200ReturnsFilm() {
-        FilmStorage filmStorage = new InMemoryFilmStorage();
-        FilmController controller = new FilmController(filmStorage);
-
         Film film = new Film();
         film.setName("Интерстеллар");
         film.setDescription("A".repeat(200));
@@ -89,9 +94,6 @@ public class FilmControllerTest {
 
     @Test
     void testCreateFilmWhenReleaseDateIs18951228ReturnsFilm() {
-        FilmStorage filmStorage = new InMemoryFilmStorage();
-        FilmController controller = new FilmController(filmStorage);
-
         Film film = new Film();
         film.setName("Интерстеллар");
         film.setDescription("Фантастический фильм");
@@ -109,9 +111,6 @@ public class FilmControllerTest {
 
     @Test
     void testCreateFilmWhenReleaseDateBefore18951228ThrowsValidationException() {
-        FilmStorage filmStorage = new InMemoryFilmStorage();
-        FilmController controller = new FilmController(filmStorage);
-
         Film film = new Film();
         film.setName("Интерстеллар");
         film.setDescription("Фантастический фильм");
@@ -127,9 +126,6 @@ public class FilmControllerTest {
 
     @Test
     void testCreateFilmWhenDurationIsZeroThrowsValidationException() {
-        FilmStorage filmStorage = new InMemoryFilmStorage();
-        FilmController controller = new FilmController(filmStorage);
-
         Film film = new Film();
         film.setName("Интерстеллар");
         film.setDescription("Фантастический фильм");
@@ -145,9 +141,6 @@ public class FilmControllerTest {
 
     @Test
     void testUpdateFilmWhenFilmExistsReturnsUpdatedFilm() {
-        FilmStorage filmStorage = new InMemoryFilmStorage();
-        FilmController controller = new FilmController(filmStorage);
-
         Film film = new Film();
         film.setName("Интерстеллар");
         film.setDescription("Старое описание");
@@ -176,9 +169,6 @@ public class FilmControllerTest {
 
     @Test
     void testCreateFilmWhenFilmIsNullThrowsValidationException() {
-        FilmStorage filmStorage = new InMemoryFilmStorage();
-        FilmController controller = new FilmController(filmStorage);
-
         assertThrows(
                 ValidationException.class,
                 () -> controller.create(null),

@@ -32,11 +32,11 @@ public class FilmService {
         filmStorage.update(film);
     }
 
-    public Collection<Film> getPopularFilms() {
+    public Collection<Film> getPopularFilms(int count) {
         return filmStorage.findAll()
                 .stream()
                 .sorted((film1, film2) -> Integer.compare(film2.getLikes().size(), film1.getLikes().size()))
-                .limit(10)
+                .limit(count)
                 .toList();
     }
 
