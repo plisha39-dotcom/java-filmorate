@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -11,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@Slf4j
 @Service
 public class UserService {
     private final UserStorage userStorage;
@@ -26,6 +28,7 @@ public class UserService {
         friend.getFriends().add(userId);
         userStorage.update(user);
         userStorage.update(friend);
+        log.info("Пользователь userId={} добавил в друзья friendId={}", user.getId(), friend.getId());
     }
 
     public void removeFriend(Long userId, Long friendId) {
@@ -35,6 +38,7 @@ public class UserService {
         friend.getFriends().remove(userId);
         userStorage.update(user);
         userStorage.update(friend);
+        log.info("Пользователь userId={} удалил из друзей friendId={}", user.getId(), friend.getId());
     }
 
     public Collection<User> getCommonFriends(Long userId, Long otherId) {
@@ -47,6 +51,12 @@ public class UserService {
             User friend = getUserById(friendId);
             userList.add(friend);
         }
+        log.debug(
+                "Получены общие друзья пользователей userId={} и otherId={}: count={}",
+                userId,
+                otherId,
+                userList.size()
+        );
         return userList;
     }
 
@@ -63,6 +73,11 @@ public class UserService {
             User friend = getUserById(friendId);
             friends.add(friend);
         }
+        log.debug(
+                "Получены друзья пользователя userId={}: count={}",
+                userId,
+                friends.size()
+        );
         return friends;
     }
 }
