@@ -67,9 +67,9 @@ public class UserService {
 
     public List<User> getFriends(Long userId) {
         User user = getUserById(userId);
-        Set<Long> friendsId = user.getFriends();
+        Set<Long> friendIds = user.getFriends();
         List<User> friends = new ArrayList<>();
-        for (Long friendId : friendsId) {
+        for (Long friendId : friendIds) {
             User friend = getUserById(friendId);
             friends.add(friend);
         }

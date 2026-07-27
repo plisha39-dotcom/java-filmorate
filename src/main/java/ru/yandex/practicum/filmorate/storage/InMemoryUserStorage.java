@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -28,6 +29,7 @@ public class InMemoryUserStorage implements UserStorage {
             log.warn("Ошибка обновления: пользователь с id {} не найден", user.getId());
             throw new NotFoundException("Пользователь с таким id не найден");
         }
+        user.setFriends(new HashSet<>(oldUser.getFriends()));
         users.put(user.getId(), user);
         log.info("Пользователь обновлен: id={}", oldUser.getId());
         return user;

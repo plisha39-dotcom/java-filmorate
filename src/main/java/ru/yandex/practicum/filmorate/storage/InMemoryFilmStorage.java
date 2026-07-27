@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -28,6 +29,7 @@ public class InMemoryFilmStorage implements FilmStorage {
             log.warn("Ошибка обновления: фильм с id {} не найден", film.getId());
             throw new NotFoundException("Фильм с таким id не найден");
         }
+        film.setLikes(new HashSet<>(oldFilm.getLikes()));
         films.put(film.getId(), film);
         log.info("Фильм обновлен: id={}", oldFilm.getId());
         return film;

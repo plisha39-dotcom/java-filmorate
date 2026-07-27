@@ -42,7 +42,7 @@ public class FilmController {
     @GetMapping("/{id}")
     public Film getFilmById(@PathVariable Long id) {
         return filmStorage.findById(id)
-                .orElseThrow(() -> new NotFoundException("Фильм  с id " + id + " не найден"));
+                .orElseThrow(() -> new NotFoundException("Фильм с id " + id + " не найден"));
     }
 
     @GetMapping("/popular")

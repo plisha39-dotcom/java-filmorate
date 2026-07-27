@@ -35,7 +35,7 @@ public class ErrorHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleMethodArgumentNotValidException(MethodArgumentNotValidException exception) {
         ErrorResponse response = new ErrorResponse(exception.getMessage());
-        log.warn("Ошибка валидации"); // тут может сформироваться большой текст, поэтому оставил лог без exception.getMessage().
+        log.warn("Ошибка валидации");
         return new ResponseEntity<>(response, HttpStatus.BAD_REQUEST);
     }
 }

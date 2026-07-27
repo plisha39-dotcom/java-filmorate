@@ -4,6 +4,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
@@ -223,6 +224,13 @@ public class FilmServiceTest {
 
         Assertions.assertThrows(NotFoundException.class,
                 () -> filmService.addLike(999L, user.getId()),
-                "При пустом фильме должен выбросится NotFoundException");
+                "При пустом фильме должен выброситься NotFoundException");
+    }
+
+    @Test
+    void testGetPopularFilmsThrowsValidationExceptionWhenCountIsNegative() {
+        Assertions.assertThrows(ValidationException.class,
+                () -> filmService.getPopularFilms(-1),
+                "При отрицательном количестве фильмов должна выбрасываться ValidationException");
     }
 }
