@@ -14,9 +14,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class UserControllerTest {
-    UserStorage userStorage;
-    UserController controller;
-    UserService userService;
+    private UserStorage userStorage;
+    private UserController controller;
+    private UserService userService;
 
     @BeforeEach
     void setUp() {

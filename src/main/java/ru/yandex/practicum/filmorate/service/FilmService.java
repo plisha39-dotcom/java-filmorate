@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -36,8 +37,8 @@ public class FilmService {
         log.info("Пользователь userId={} удалил лайк фильму filmId={}", userId, film.getId());
     }
 
-    public Collection<Film> getPopularFilms(int count) {
-        Collection<Film> popularFilms = filmStorage.findAll()
+    public List<Film> getPopularFilms(int count) {
+        List<Film> popularFilms = filmStorage.findAll()
                 .stream()
                 .sorted((film1, film2) -> Integer.compare(
                         film2.getLikes().size(),
