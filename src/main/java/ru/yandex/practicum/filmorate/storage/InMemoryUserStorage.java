@@ -56,6 +56,9 @@ public class InMemoryUserStorage implements UserStorage {
             log.warn("Ошибка удаления: пользователь с id {} не найден", id);
             throw new NotFoundException("Пользователь с таким id не найден");
         }
+        for (User otherUser : users.values()) {
+            otherUser.getFriends().remove(id);
+        }
         users.remove(id);
         log.info("Пользователь удален: id={}", id);
     }

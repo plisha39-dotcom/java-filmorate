@@ -73,12 +73,12 @@ public class UserValidationTest {
         Set<ConstraintViolation<User>> violations = validator.validate(user);
 
         Assertions.assertTrue(violations.stream()
-                        .anyMatch(violation -> violation.
-                                getPropertyPath().toString().equals("login")
-                                && violation.getConstraintDescriptor()
-                                .getAnnotation()
-                                .annotationType()
-                                == Pattern.class),
+                        .anyMatch(violation ->
+                                violation.getPropertyPath().toString().equals("login")
+                                        && violation.getConstraintDescriptor()
+                                        .getAnnotation()
+                                        .annotationType()
+                                        == Pattern.class),
                 "Логин с пробелами должен нарушать ограничение @Pattern"
         );
     }

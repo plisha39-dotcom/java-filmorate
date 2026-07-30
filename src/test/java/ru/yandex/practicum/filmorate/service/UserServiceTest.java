@@ -4,7 +4,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -15,11 +18,13 @@ import java.util.List;
 public class UserServiceTest {
     private UserStorage userStorage;
     private UserService userService;
+    private FilmStorage filmStorage;
 
     @BeforeEach
     void setUp() {
         userStorage = new InMemoryUserStorage();
-        userService = new UserService(userStorage);
+        filmStorage = new InMemoryFilmStorage();
+        userService = new UserService(userStorage, filmStorage);
     }
 
     @Test
@@ -233,6 +238,47 @@ public class UserServiceTest {
         Assertions.assertTrue(
                 savedUser.getFriends().isEmpty(),
                 "Список друзей первого пользователя должен быть пустым"
+        );
+    }
+
+    @Test
+    void testDeleteUserRemovesLikesFromFilms() {
+        User user = new User();
+        user.setName("Борис");
+        user.setLogin("BOR");
+        user.setEmail("bor@yandex.ru");
+        user.setBirthday(LocalDate.of(1999, 1, 15));
+
+        User savedUser = userStorage.create(user);
+
+        Film film = new Film();
+        film.setName("Интерстеллар");
+        film.setDescription("Фантастический фильм");
+        film.setReleaseDate(LocalDate.of(2014, 11, 6));
+        film.setDuration(169);
+
+        Film savedFilm = filmStorage.create(film);
+
+        savedFilm.getLikes().add(savedUser.getId());
+        filmStorage.update(savedFilm);
+
+        Assertions.assertTrue(
+                filmStorage.findById(savedFilm.getId()).orElseThrow()
+                        .getLikes().contains(savedUser.getId()),
+                "Перед удалением пользователя его лайк должен находиться у фильма"
+        );
+
+        userService.deleteUser(savedUser.getId());
+
+        Assertions.assertTrue(
+                userStorage.findById(savedUser.getId()).isEmpty(),
+                "Пользователь должен быть удалён"
+        );
+
+        Assertions.assertFalse(
+                filmStorage.findById(savedFilm.getId()).orElseThrow()
+                        .getLikes().contains(savedUser.getId()),
+                "Лайки удалённого пользователя должны быть очищены"
         );
     }
 }
