@@ -16,6 +16,7 @@ import java.util.Optional;
 @Slf4j
 public class InMemoryFilmStorage implements FilmStorage {
     private final Map<Long, Film> films = new HashMap<>();
+    private long currentId = 0;
 
     @Override
     public Collection<Film> findAll() {
@@ -60,7 +61,6 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     private long getNextId() {
-        long currentMaxId = films.keySet().stream().mapToLong(id -> id).max().orElse(0);
-        return ++currentMaxId;
+        return ++currentId;
     }
 }

@@ -65,4 +65,59 @@ public class InMemoryUserStorageTest {
                 "Количество друзей должно остаться равным 1"
         );
     }
+
+    @Test
+    void testCreateDoesNotReuseDeletedUserId() {
+        User user = new User();
+        user.setName("Борис");
+        user.setLogin("BOR");
+        user.setEmail("bor@yandex.ru");
+        user.setBirthday(LocalDate.of(1999, 1, 15));
+
+        userStorage.create(user);
+
+        User user1 = new User();
+        user1.setName("Иван");
+        user1.setLogin("ivan");
+        user1.setEmail("ivan@yandex.ru");
+        user1.setBirthday(LocalDate.of(2000, 12, 15));
+
+        userStorage.create(user1);
+
+        User user2 = new User();
+        user2.setName("Вася");
+        user2.setLogin("Vasya");
+        user2.setEmail("vs@yandex.ru");
+        user2.setBirthday(LocalDate.of(2001, 6, 1));
+
+        userStorage.create(user2);
+
+        Assertions.assertEquals(
+                3L,
+                user2.getId(),
+                "Третий пользователь должен получить ID 3"
+        );
+
+        userStorage.delete(user2.getId());
+
+        User user3 = new User();
+        user3.setName("Денис");
+        user3.setLogin("den");
+        user3.setEmail("den@yandex.ru");
+        user3.setBirthday(LocalDate.of(1999, 1, 15));
+
+        userStorage.create(user3);
+
+        Assertions.assertEquals(
+                4L,
+                user3.getId(),
+                "После удаления пользователя следующий ID должен быть равен 4"
+        );
+
+        Assertions.assertNotEquals(
+                user2.getId(),
+                user3.getId(),
+                "Удалённый ID не должен использоваться повторно"
+        );
+    }
 }

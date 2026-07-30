@@ -16,6 +16,7 @@ import java.util.Optional;
 @Component
 public class InMemoryUserStorage implements UserStorage {
     private final Map<Long, User> users = new HashMap<>();
+    private long currentId = 0;
 
     @Override
     public Collection<User> findAll() {
@@ -60,7 +61,6 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     private long getNextId() {
-        long currentMaxId = users.keySet().stream().mapToLong(id -> id).max().orElse(0);
-        return ++currentMaxId;
+        return ++currentId;
     }
 }
