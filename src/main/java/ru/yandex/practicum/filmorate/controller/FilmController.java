@@ -53,7 +53,7 @@ public class FilmController {
 
     @PostMapping
     public Film create(@Valid @RequestBody Film film) {
-        validateFilm(film);
+        validateReleaseDate(film);
         return filmStorage.create(film);
     }
 
@@ -67,7 +67,7 @@ public class FilmController {
             log.warn("Ошибка валидации: отсутствует Id фильма");
             throw new ValidationException("Id должен быть указан!");
         }
-        validateFilm(newFilm);
+        validateReleaseDate(newFilm);
         return filmStorage.update(newFilm);
     }
 
@@ -83,26 +83,10 @@ public class FilmController {
         filmService.removeLike(id, userId);
     }
 
-    private void validateFilm(Film film) {
-        if (film == null) {
-            log.warn("Ошибка валидации: пустой фильм");
-            throw new ValidationException("Фильм не может быть пустым");
-        }
-        if (film.getName() == null || film.getName().isBlank()) {
-            log.warn("Ошибка валидации: название пустое");
-            throw new ValidationException("Название не может быть пустым!");
-        }
-        if (film.getDescription() != null && film.getDescription().length() > 200) {
-            log.warn("Ошибка валидации: в описании превышен лимит символов");
-            throw new ValidationException("Длина описания не должна превышать 200 символов");
-        }
+    private void validateReleaseDate(Film film) {
         if (film.getReleaseDate() == null || film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
             log.warn("Ошибка валидации: некорректная дата релиза");
             throw new ValidationException("Дата релиза не может быть раньше 28 декабря 1895 года");
-        }
-        if (film.getDuration() == null || film.getDuration() <= 0) {
-            log.warn("Ошибка валидации: некорректная продолжительность фильма");
-            throw new ValidationException("Продолжительность фильма должна быть положительным числом");
         }
     }
 }

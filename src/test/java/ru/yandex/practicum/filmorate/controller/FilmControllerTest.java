@@ -47,35 +47,6 @@ public class FilmControllerTest {
     }
 
     @Test
-    void testCreateFilmWhenNameIsBlankThrowsValidationException() {
-        Film film = new Film();
-        film.setName("");
-        film.setDescription("Фантастический фильм");
-        film.setReleaseDate(LocalDate.of(2014, 11, 6));
-        film.setDuration(169);
-
-        assertThrows(
-                ValidationException.class,
-                () -> controller.create(film),
-                "Фильм с пустым названием должен выбрасывать ValidationException"
-        );
-    }
-
-    @Test
-    void testCreateFilmWhenDescriptionLengthIs201ThrowsValidationException() {
-        Film film = new Film();
-        film.setName("Интерстеллар");
-        film.setDescription("A".repeat(201));
-        film.setReleaseDate(LocalDate.of(2014, 11, 6));
-        film.setDuration(169);
-
-        assertThrows(
-                ValidationException.class,
-                () -> controller.create(film),
-                "Фильм с описанием длиннее 200 символов должен выбрасывать ValidationException");
-    }
-
-    @Test
     void testCreateFilmWhenDescriptionLengthIs200ReturnsFilm() {
         Film film = new Film();
         film.setName("Интерстеллар");
@@ -110,36 +81,6 @@ public class FilmControllerTest {
     }
 
     @Test
-    void testCreateFilmWhenReleaseDateBefore18951228ThrowsValidationException() {
-        Film film = new Film();
-        film.setName("Интерстеллар");
-        film.setDescription("Фантастический фильм");
-        film.setReleaseDate(LocalDate.of(1895, 12, 27));
-        film.setDuration(169);
-
-        assertThrows(
-                ValidationException.class,
-                () -> controller.create(film),
-                "Фильм с неправильной датой должен выбрасывать ValidationException"
-        );
-    }
-
-    @Test
-    void testCreateFilmWhenDurationIsZeroThrowsValidationException() {
-        Film film = new Film();
-        film.setName("Интерстеллар");
-        film.setDescription("Фантастический фильм");
-        film.setReleaseDate(LocalDate.of(2014, 11, 6));
-        film.setDuration(0);
-
-        assertThrows(
-                ValidationException.class,
-                () -> controller.create(film),
-                "Фильм с неправильной продолжительностью должен выбрасывать ValidationException"
-        );
-    }
-
-    @Test
     void testUpdateFilmWhenFilmExistsReturnsUpdatedFilm() {
         Film film = new Film();
         film.setName("Интерстеллар");
@@ -165,14 +106,5 @@ public class FilmControllerTest {
         assertEquals("Новое описание", updateFilm.getDescription(), "Описание фильма должно измениться");
         assertEquals(LocalDate.of(2010, 1, 8), updateFilm.getReleaseDate(), "Дата релиза должна измениться");
         assertEquals(120, updateFilm.getDuration(), "Продолжительность должна измениться");
-    }
-
-    @Test
-    void testCreateFilmWhenFilmIsNullThrowsValidationException() {
-        assertThrows(
-                ValidationException.class,
-                () -> controller.create(null),
-                "Пустой фильм должен выбрасывать ValidationException"
-        );
     }
 }

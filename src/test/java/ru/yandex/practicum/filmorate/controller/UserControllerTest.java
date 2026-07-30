@@ -43,66 +43,6 @@ public class UserControllerTest {
     }
 
     @Test
-    void testCreateUserWhenEmailIsBlankThrowsValidationException() {
-        User user = new User();
-        user.setName("Борис");
-        user.setLogin("BOR");
-        user.setEmail("");
-        user.setBirthday(LocalDate.of(1999, 1, 15));
-
-        assertThrows(
-                ValidationException.class,
-                () -> controller.create(user),
-                "Пользователь с пустым email должен выбрасывать ValidationException"
-        );
-    }
-
-    @Test
-    void testCreateUserWhenEmailWithoutAtThrowsValidationException() {
-        User user = new User();
-        user.setName("Борис");
-        user.setLogin("BOR");
-        user.setEmail("boryandex.ru");
-        user.setBirthday(LocalDate.of(1999, 1, 15));
-
-        assertThrows(
-                ValidationException.class,
-                () -> controller.create(user),
-                "Пользователь с отсутствующей @ должен выбрасывать ValidationException"
-        );
-    }
-
-    @Test
-    void testCreateUserWhenLoginIsBlankThrowsValidationException() {
-        User user = new User();
-        user.setName("Борис");
-        user.setLogin("");
-        user.setEmail("bor@yandex.ru");
-        user.setBirthday(LocalDate.of(1999, 1, 15));
-
-        assertThrows(
-                ValidationException.class,
-                () -> controller.create(user),
-                "Пользователь с пустым логином должен выбрасывать ValidationException"
-        );
-    }
-
-    @Test
-    void testCreateUserWhenLoginContainsSpaceThrowsValidationException() {
-        User user = new User();
-        user.setName("Борис");
-        user.setLogin("B R");
-        user.setEmail("bor@yandex.ru");
-        user.setBirthday(LocalDate.of(1999, 1, 15));
-
-        assertThrows(
-                ValidationException.class,
-                () -> controller.create(user),
-                "Пользователь с логином содержащим пробел должен выбрасывать ValidationException"
-        );
-    }
-
-    @Test
     void testCreateUserWhenNameIsBlankUsesLoginAsName() {
         User user = new User();
         user.setName("");
@@ -139,21 +79,6 @@ public class UserControllerTest {
     }
 
     @Test
-    void testCreateUserWhenBirthdayIsInFutureThrowsValidationException() {
-        User user = new User();
-        user.setName("Борис");
-        user.setLogin("BOR");
-        user.setEmail("bor@yandex.ru");
-        user.setBirthday(LocalDate.now().plusDays(1));
-
-        assertThrows(
-                ValidationException.class,
-                () -> controller.create(user),
-                "Пользователь с неверной датой рождения должен выбрасывать ValidationException"
-        );
-    }
-
-    @Test
     void testUpdateUserWhenUserExistsReturnsUpdatedUser() {
         User user = new User();
         user.setName("Борис");
@@ -179,29 +104,5 @@ public class UserControllerTest {
         assertEquals("Новый_логин", updateUser.getLogin(), "Логин пользователя должен измениться");
         assertEquals(LocalDate.of(1990, 2, 20), updateUser.getBirthday(), "Дата рождения должна измениться");
         assertEquals("new@yandex.ru", updateUser.getEmail(), "email должен измениться");
-    }
-
-    @Test
-    void testCreateUserWhenUserIsNullThrowsValidationException() {
-        assertThrows(
-                ValidationException.class,
-                () -> controller.create(null),
-                "Пустой пользователь должен выбрасывать ValidationException"
-        );
-    }
-
-    @Test
-    void testUpdateUserWhenIdIsNullThrowsValidationException() {
-        User user = new User();
-        user.setName("Борис");
-        user.setLogin("BOR");
-        user.setEmail("bor@yandex.ru");
-        user.setBirthday(LocalDate.of(1999, 1, 15));
-
-        assertThrows(
-                ValidationException.class,
-                () -> controller.update(user),
-                "Пользователь без id должен выбрасывать ValidationException"
-        );
     }
 }

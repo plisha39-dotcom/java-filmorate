@@ -17,7 +17,6 @@ import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.time.LocalDate;
 import java.util.Collection;
 
 @RestController
@@ -57,7 +56,7 @@ public class UserController {
 
     @PostMapping
     public User create(@Valid @RequestBody User user) {
-        validateUser(user);
+        setDefaultName(user);
         return userStorage.create(user);
     }
 
@@ -71,7 +70,7 @@ public class UserController {
             log.warn("Ошибка валидации: отсутствует Id пользователя");
             throw new ValidationException("Id должен быть указан");
         }
-        validateUser(newUser);
+        setDefaultName(newUser);
         return userStorage.update(newUser);
     }
 
@@ -87,26 +86,10 @@ public class UserController {
         userService.removeFriend(id, friendId);
     }
 
-    private void validateUser(User user) {
-        if (user == null) {
-            log.warn("Ошибка валидации: пустой пользователь");
-            throw new ValidationException("Пользователь не может быть пустым");
-        }
-        if (user.getEmail() == null || user.getEmail().isBlank() || !user.getEmail().contains("@")) {
-            log.warn("Ошибка валидации: эл.почта пустая или отсутствует @");
-            throw new ValidationException("Электронная почта не может быть пустой и должна содержать символ @");
-        }
-        if (user.getLogin() == null || user.getLogin().isBlank() || user.getLogin().contains(" ")) {
-            log.warn("Ошибка валидации: пустой логин или содержатся пробелы");
-            throw new ValidationException("Логин не может быть пустым и содержать пробелы");
-        }
+    private void setDefaultName(User user) {
         if (user.getName() == null || user.getName().isBlank()) {
             user.setName(user.getLogin());
             log.debug("Имя пользователя отсутствует, используется логин");
-        }
-        if (user.getBirthday() == null || user.getBirthday().isAfter(LocalDate.now())) {
-            log.warn("Ошибка валидации: неверная дата рождения");
-            throw new ValidationException("Дата рождения не может быть в будущем");
         }
     }
 }
