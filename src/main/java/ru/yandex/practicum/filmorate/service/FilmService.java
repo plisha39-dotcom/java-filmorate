@@ -17,7 +17,7 @@ public class FilmService {
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
 
-    public FilmService(@Qualifier("userDbStorage")UserStorage userStorage, FilmStorage filmStorage) {
+    public FilmService(@Qualifier("userDbStorage")UserStorage userStorage, @Qualifier("filmDbStorage")FilmStorage filmStorage) {
         this.userStorage = userStorage;
         this.filmStorage = filmStorage;
     }
@@ -25,16 +25,14 @@ public class FilmService {
     public void addLike(Long filmId, Long userId) {
         checkUserExists(userId);
         Film film = getFilmById(filmId);
-        film.getLikes().add(userId);
-        filmStorage.update(film);
+        filmStorage.addLike(filmId, userId);
         log.info("Пользователь userId={} поставил лайк фильму filmId={}", userId, film.getId());
     }
 
     public void removeLike(Long filmId, Long userId) {
         checkUserExists(userId);
         Film film = getFilmById(filmId);
-        film.getLikes().remove(userId);
-        filmStorage.update(film);
+        filmStorage.removeLike(filmId, userId);
         log.info("Пользователь userId={} удалил лайк фильму filmId={}", userId, film.getId());
     }
 

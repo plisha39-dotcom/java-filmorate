@@ -40,7 +40,7 @@ public class UserDbStorage implements UserStorage {
         String query = "select * from users where user_id = ?";
         try {
             User user = jdbc.queryForObject(query, mapper, id);
-            return Optional.of(user);
+            return Optional.ofNullable(user);
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
