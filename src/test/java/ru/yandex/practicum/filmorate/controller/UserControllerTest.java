@@ -2,12 +2,10 @@ package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.*;
 
 import java.time.LocalDate;
 
@@ -18,12 +16,14 @@ public class UserControllerTest {
     private UserController controller;
     private UserService userService;
     private FilmStorage filmStorage;
+    private FriendshipStorage friendshipStorage;
 
     @BeforeEach
     void setUp() {
         userStorage = new InMemoryUserStorage();
         filmStorage = new InMemoryFilmStorage();
-        userService = new UserService(userStorage, filmStorage);
+        friendshipStorage = Mockito.mock(FriendshipStorage.class);
+        userService = new UserService(userStorage, filmStorage, friendshipStorage);
         controller = new UserController(userStorage, userService);
     }
 

@@ -3,32 +3,35 @@ package ru.yandex.practicum.filmorate.service;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Friendship;
+import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.*;
 
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 public class UserServiceTest {
     private UserStorage userStorage;
     private UserService userService;
     private FilmStorage filmStorage;
+    private FriendshipStorage friendshipStorage;
 
     @BeforeEach
     void setUp() {
         userStorage = new InMemoryUserStorage();
         filmStorage = new InMemoryFilmStorage();
-        userService = new UserService(userStorage, filmStorage);
-    }
+        friendshipStorage = Mockito.mock(FriendshipStorage.class);
+        userService = new UserService(userStorage, filmStorage, friendshipStorage);    }
 
     @Test
-    void testAddFriendAddsUsersToEachOther() {
+    void testCreatingNewOneWayConnection() {
         User user = new User();
         user.setName("Борис");
         user.setLogin("BOR");
@@ -45,17 +48,14 @@ public class UserServiceTest {
 
         userStorage.create(user1);
 
+        Mockito.when(friendshipStorage.findFriendship(user1.getId(), user.getId()))
+                        .thenReturn(Optional.empty());
+        Mockito.when(friendshipStorage.findFriendship(user.getId(), user1.getId()))
+                        .thenReturn(Optional.empty());
+
         userService.addFriend(user.getId(), user1.getId());
 
-        User savedUser = userStorage.findById(user.getId()).orElseThrow();
-        User savedUser1 = userStorage.findById(user1.getId()).orElseThrow();
-
-        Assertions.assertTrue(savedUser.getFriends().contains(user1.getId()),
-                "У первого пользователя в друзьях должен быть второй пользователь");
-        Assertions.assertTrue(savedUser1.getFriends().contains(user.getId()),
-                "У второго пользователя в друзьях должен быть первый пользователь");
-        Assertions.assertEquals(1, savedUser.getFriends().size(), "Размер списка друзей должен быть 1");
-        Assertions.assertEquals(1, savedUser1.getFriends().size(), "Размер списка друзей должен быть 1");
+        Mockito.verify(friendshipStorage).addFriendship(user.getId(), user1.getId());
     }
 
     @Test
@@ -76,18 +76,18 @@ public class UserServiceTest {
 
         userStorage.create(user1);
 
+        Friendship friendship = new Friendship();
+        friendship.setRequesterId(user.getId());
+        friendship.setAddresseeId(user1.getId());
+        friendship.setStatus(FriendshipStatus.UNCONFIRMED);
+
+        Mockito.when(friendshipStorage.findFriendship(user.getId(), user1.getId())).
+                thenReturn(Optional.empty()).thenReturn(Optional.of(friendship));
+
         userService.addFriend(user.getId(), user1.getId());
         userService.addFriend(user.getId(), user1.getId());
 
-        User savedUser = userStorage.findById(user.getId()).orElseThrow();
-        User savedUser1 = userStorage.findById(user1.getId()).orElseThrow();
-
-        Assertions.assertTrue(savedUser.getFriends().contains(user1.getId()),
-                "У первого пользователя в друзьях должен быть второй пользователь");
-        Assertions.assertTrue(savedUser1.getFriends().contains(user.getId()),
-                "У второго пользователя в друзьях должен быть первый пользователь");
-        Assertions.assertEquals(1, savedUser.getFriends().size(), "Размер списка друзей должен быть 1");
-        Assertions.assertEquals(1, savedUser1.getFriends().size(), "Размер списка друзей должен быть 1");
+        Mockito.verify(friendshipStorage, Mockito.times(1)).addFriendship(user.getId(), user1.getId());
     }
 
     @Test
@@ -151,8 +151,8 @@ public class UserServiceTest {
 
         userStorage.create(user2);
 
-        userService.addFriend(user.getId(), user1.getId());
-        userService.addFriend(user.getId(), user2.getId());
+        Mockito.when(friendshipStorage.getFriendsIds(user.getId()))
+                .thenReturn(Set.of(user1.getId(), user2.getId()));
 
         List<User> friends = userService.getFriends(user.getId());
 
@@ -206,9 +206,10 @@ public class UserServiceTest {
 
         userStorage.create(user2);
 
-        userService.addFriend(userA.getId(), user1.getId());
-        userService.addFriend(userA.getId(), user2.getId());
-        userService.addFriend(userB.getId(), user1.getId());
+        Mockito.when(friendshipStorage.getFriendsIds(userA.getId()))
+                .thenReturn(Set.of(user1.getId(), user2.getId()));
+        Mockito.when(friendshipStorage.getFriendsIds(userB.getId()))
+                .thenReturn(Set.of(user1.getId()));
 
         Collection<User> friends = userService.getCommonFriends(userA.getId(), userB.getId());
 
