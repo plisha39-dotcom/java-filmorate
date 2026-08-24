@@ -22,7 +22,7 @@ public class MpaDbStorageTest {
     private final MpaDbStorage storage;
 
     @Test
-    void estFindMpaById() {
+    void testFindMpaById() {
         Optional<Mpa> optional = storage.findById(1);
 
         assertThat(optional)
