@@ -19,22 +19,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class GenreDbStorageTest {
     private final GenreDbStorage storage;
-    
+
     @Test
     void testFindGenreById() {
         Optional<Genre> optional = storage.findById(1);
-        
+
         assertThat(optional)
                 .isPresent()
                 .hasValueSatisfying(foundGenre ->
                         assertThat(foundGenre).hasFieldOrPropertyWithValue("id", 1)
                                 .hasFieldOrPropertyWithValue("name", "Комедия"));
     }
-    
+
     @Test
     void testFindAllGenres() {
         Collection<Genre> collection = storage.findAll();
-        
+
         assertThat(collection).hasSize(6);
         assertThat(collection).
                 extracting(Genre::getId)

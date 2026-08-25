@@ -23,7 +23,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class FriendshipDbStorageTest {
     private final FriendshipDbStorage friendshipStorage;
     private final UserDbStorage userStorage;
-    
+
     @Test
     void testAddFriendship() {
         User user = new User();
@@ -31,21 +31,21 @@ public class FriendshipDbStorageTest {
         user.setLogin("BOR");
         user.setEmail("bor@yandex.ru");
         user.setBirthday(LocalDate.of(1999, 1, 15));
-        
+
         userStorage.create(user);
-        
+
         User user1 = new User();
         user1.setName("Иван");
         user1.setLogin("ivan");
         user1.setEmail("ivan@yandex.ru");
         user1.setBirthday(LocalDate.of(2000, 12, 15));
-        
+
         userStorage.create(user1);
-        
+
         friendshipStorage.addFriendship(user.getId(), user1.getId());
-        
+
         Optional<Friendship> friendship = friendshipStorage.findFriendship(user.getId(), user1.getId());
-        
+
         assertThat(friendship)
                 .isPresent()
                 .hasValueSatisfying(foundFriendship ->
@@ -54,7 +54,7 @@ public class FriendshipDbStorageTest {
                                 .hasFieldOrPropertyWithValue("addresseeId", user1.getId())
                                 .hasFieldOrPropertyWithValue("status", FriendshipStatus.UNCONFIRMED));
     }
-    
+
     @Test
     void testFindFriendship() {
         User user = new User();
@@ -62,27 +62,27 @@ public class FriendshipDbStorageTest {
         user.setLogin("BOR");
         user.setEmail("bor@yandex.ru");
         user.setBirthday(LocalDate.of(1999, 1, 15));
-        
+
         userStorage.create(user);
-        
+
         User user1 = new User();
         user1.setName("Иван");
         user1.setLogin("ivan");
         user1.setEmail("ivan@yandex.ru");
         user1.setBirthday(LocalDate.of(2000, 12, 15));
-        
+
         userStorage.create(user1);
-        
+
         friendshipStorage.addFriendship(user.getId(), user1.getId());
-        
+
         Optional<Friendship> friendship = friendshipStorage.findFriendship(user.getId(), user1.getId());
-        
+
         assertThat(friendship).isPresent();
-        
+
         Optional<Friendship> friendship1 = friendshipStorage.findFriendship(user1.getId(), user.getId());
-        
+
         assertThat(friendship1).isEmpty();
-        
+
         assertThat(friendship)
                 .hasValueSatisfying(foundFriendship ->
                         assertThat(foundFriendship)
@@ -90,7 +90,7 @@ public class FriendshipDbStorageTest {
                                 .hasFieldOrPropertyWithValue("addresseeId", user1.getId())
                                 .hasFieldOrPropertyWithValue("status", FriendshipStatus.UNCONFIRMED));
     }
-    
+
     @Test
     void testConfirmFriendship() {
         User user = new User();
@@ -98,38 +98,38 @@ public class FriendshipDbStorageTest {
         user.setLogin("BOR");
         user.setEmail("bor@yandex.ru");
         user.setBirthday(LocalDate.of(1999, 1, 15));
-        
+
         userStorage.create(user);
-        
+
         User user1 = new User();
         user1.setName("Иван");
         user1.setLogin("ivan");
         user1.setEmail("ivan@yandex.ru");
         user1.setBirthday(LocalDate.of(2000, 12, 15));
-        
+
         userStorage.create(user1);
-        
+
         friendshipStorage.addFriendship(user.getId(), user1.getId());
-        
+
         Optional<Friendship> friendship = friendshipStorage.findFriendship(user.getId(), user1.getId());
-        
+
         assertThat(friendship)
                 .isPresent()
                 .hasValueSatisfying(foundFriendship ->
                         assertThat(foundFriendship.getStatus())
                                 .isEqualTo(FriendshipStatus.UNCONFIRMED));
-        
+
         friendshipStorage.confirmFriendship(user.getId(), user1.getId());
-        
+
         friendship = friendshipStorage.findFriendship(user.getId(), user1.getId());
-        
+
         assertThat(friendship)
                 .isPresent()
                 .hasValueSatisfying(foundFriendship ->
                         assertThat(foundFriendship.getStatus())
                                 .isEqualTo(FriendshipStatus.CONFIRMED));
     }
-    
+
     @Test
     void testDeleteFriendship() {
         User user = new User();
@@ -137,30 +137,30 @@ public class FriendshipDbStorageTest {
         user.setLogin("BOR");
         user.setEmail("bor@yandex.ru");
         user.setBirthday(LocalDate.of(1999, 1, 15));
-        
+
         userStorage.create(user);
-        
+
         User user1 = new User();
         user1.setName("Иван");
         user1.setLogin("ivan");
         user1.setEmail("ivan@yandex.ru");
         user1.setBirthday(LocalDate.of(2000, 12, 15));
-        
+
         userStorage.create(user1);
-        
+
         friendshipStorage.addFriendship(user.getId(), user1.getId());
-        
+
         Optional<Friendship> friendship = friendshipStorage.findFriendship(user.getId(), user1.getId());
-        
+
         assertThat(friendship).isPresent();
-        
+
         friendshipStorage.deleteFriendship(user.getId(), user1.getId());
-        
+
         friendship = friendshipStorage.findFriendship(user.getId(), user1.getId());
-        
+
         assertThat(friendship).isEmpty();
     }
-    
+
     @Test
     void testGetFriendsIds() {
         User user = new User();
@@ -168,30 +168,30 @@ public class FriendshipDbStorageTest {
         user.setLogin("BOR");
         user.setEmail("bor@yandex.ru");
         user.setBirthday(LocalDate.of(1999, 1, 15));
-        
+
         userStorage.create(user);
-        
+
         User user1 = new User();
         user1.setName("Иван");
         user1.setLogin("ivan");
         user1.setEmail("ivan@yandex.ru");
         user1.setBirthday(LocalDate.of(2000, 12, 15));
-        
+
         userStorage.create(user1);
-        
+
         User user2 = new User();
         user2.setName("Вася");
         user2.setLogin("Vasya");
         user2.setEmail("vs@yandex.ru");
         user2.setBirthday(LocalDate.of(2001, 6, 1));
-        
+
         userStorage.create(user2);
-        
+
         friendshipStorage.addFriendship(user.getId(), user1.getId());
         friendshipStorage.addFriendship(user.getId(), user2.getId());
-        
+
         Set<Long> friendship = friendshipStorage.getFriendsIds(user.getId());
-        
+
         assertThat(friendship).hasSize(2);
         assertThat(friendship)
                 .containsExactlyInAnyOrder(user1.getId(), user2.getId());

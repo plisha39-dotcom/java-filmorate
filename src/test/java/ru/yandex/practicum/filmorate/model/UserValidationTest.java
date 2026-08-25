@@ -16,14 +16,14 @@ import java.util.Set;
 
 public class UserValidationTest {
     private Validator validator;
-    
+
     @BeforeEach
     void setUp() {
         validator = validator = Validation
                 .buildDefaultValidatorFactory()
                 .getValidator();
     }
-    
+
     @Test
     void testInvalidEmailProducesValidationViolation() {
         User user = new User();
@@ -31,16 +31,16 @@ public class UserValidationTest {
         user.setLogin("BOR");
         user.setEmail("boryandex.ru");
         user.setBirthday(LocalDate.of(1999, 1, 15));
-        
+
         Set<ConstraintViolation<User>> violations = validator.validate(user);
-        
+
         Assertions.assertFalse(violations.isEmpty(),
                 "Для некорректного email должно найтись нарушение валидации");
         Assertions.assertTrue(violations.stream()
                         .anyMatch(violation -> violation.getPropertyPath().toString().equals("email")),
                 "Нарушение валидации должно относиться к email");
     }
-    
+
     @Test
     void testBlankEmailProducesNotBlankViolation() {
         User user = new User();
@@ -48,9 +48,9 @@ public class UserValidationTest {
         user.setLogin("BOR");
         user.setEmail("      ");
         user.setBirthday(LocalDate.of(1999, 1, 15));
-        
+
         Set<ConstraintViolation<User>> violations = validator.validate(user);
-        
+
         Assertions.assertTrue(violations.stream()
                         .anyMatch(violation ->
                                 violation.getPropertyPath().toString().equals("email")
@@ -61,7 +61,7 @@ public class UserValidationTest {
                 "Пустой email должен нарушать ограничение @NotBlank"
         );
     }
-    
+
     @Test
     void testLoginWithSpacesProducesPatternViolation() {
         User user = new User();
@@ -69,9 +69,9 @@ public class UserValidationTest {
         user.setLogin("bad login");
         user.setEmail("bor@yandex.ru");
         user.setBirthday(LocalDate.of(1999, 1, 15));
-        
+
         Set<ConstraintViolation<User>> violations = validator.validate(user);
-        
+
         Assertions.assertTrue(violations.stream()
                         .anyMatch(violation ->
                                 violation.getPropertyPath().toString().equals("login")
@@ -82,7 +82,7 @@ public class UserValidationTest {
                 "Логин с пробелами должен нарушать ограничение @Pattern"
         );
     }
-    
+
     @Test
     void testBlankLoginProducesNotBlankViolation() {
         User user = new User();
@@ -90,9 +90,9 @@ public class UserValidationTest {
         user.setLogin("       ");
         user.setEmail("bor@yandex.ru");
         user.setBirthday(LocalDate.of(1999, 1, 15));
-        
+
         Set<ConstraintViolation<User>> violations = validator.validate(user);
-        
+
         Assertions.assertTrue(violations.stream()
                         .anyMatch(violation -> violation.getPropertyPath().toString().equals("login")
                                 && violation.getConstraintDescriptor()
@@ -101,7 +101,7 @@ public class UserValidationTest {
                                 == NotBlank.class),
                 "Логин с пробелами должен нарушать ограничения @NotBlank");
     }
-    
+
     @Test
     void testFutureBirthdayProducesPastOrPresentViolation() {
         User user = new User();
@@ -109,9 +109,9 @@ public class UserValidationTest {
         user.setLogin("BOR");
         user.setEmail("bor@yandex.ru");
         user.setBirthday(LocalDate.now().plusDays(1));
-        
+
         Set<ConstraintViolation<User>> violations = validator.validate(user);
-        
+
         Assertions.assertTrue(violations.stream()
                         .anyMatch(violation -> violation.getPropertyPath().toString().equals("birthday")
                                 && violation.getConstraintDescriptor()
@@ -120,7 +120,7 @@ public class UserValidationTest {
                                 == PastOrPresent.class),
                 "Пользователь с датой рождения в будущем должен нарушать ограничение @PastOrPresent");
     }
-    
+
     @Test
     void testNullBirthdayProducesNotNullViolation() {
         User user = new User();
@@ -128,9 +128,9 @@ public class UserValidationTest {
         user.setLogin("BOR");
         user.setEmail("bor@yandex.ru");
         user.setBirthday(null);
-        
+
         Set<ConstraintViolation<User>> violations = validator.validate(user);
-        
+
         Assertions.assertTrue(violations.stream()
                         .anyMatch(violation -> violation.getPropertyPath().toString().equals("birthday")
                                 && violation.getConstraintDescriptor()
