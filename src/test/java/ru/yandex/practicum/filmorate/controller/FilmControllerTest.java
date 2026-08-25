@@ -23,7 +23,7 @@ public class FilmControllerTest {
     private FilmController controller;
     private final MpaStorage mpaStorage = mock(MpaStorage.class);
     private final GenreStorage genreStorage = mock(GenreStorage.class);
-
+    
     @BeforeEach
     void setUp() {
         filmStorage = new InMemoryFilmStorage();
@@ -31,7 +31,7 @@ public class FilmControllerTest {
         filmService = new FilmService(userStorage, filmStorage);
         controller = new FilmController(filmStorage, filmService, mpaStorage, genreStorage);
     }
-
+    
     @Test
     void testCreateFilmWhenFilmIsValidReturnsFilm() {
         Film film = new Film();
@@ -39,16 +39,16 @@ public class FilmControllerTest {
         film.setDescription("Фантастический фильм");
         film.setReleaseDate(LocalDate.of(2014, 11, 6));
         film.setDuration(169);
-
+        
         Film createdFilm = controller.create(film);
-
+        
         assertEquals(1L, createdFilm.getId(), "Первому фильму должен быть присвоен id = 1");
         assertEquals("Интерстеллар", createdFilm.getName(), "Название фильма должно сохраниться");
         assertEquals("Фантастический фильм", createdFilm.getDescription(), "Описание фильма должно сохраниться");
         assertEquals(LocalDate.of(2014, 11, 6), createdFilm.getReleaseDate(), "Дата релиза должна сохраниться");
         assertEquals(169, createdFilm.getDuration(), "Продолжительность должна сохраниться");
     }
-
+    
     @Test
     void testCreateFilmWhenDescriptionLengthIs200ReturnsFilm() {
         Film film = new Film();
@@ -56,16 +56,16 @@ public class FilmControllerTest {
         film.setDescription("A".repeat(200));
         film.setReleaseDate(LocalDate.of(2014, 11, 6));
         film.setDuration(169);
-
+        
         Film createdFilm = controller.create(film);
-
+        
         assertEquals(1L, createdFilm.getId(), "Первому фильму должен быть присвоен id = 1");
         assertEquals("Интерстеллар", createdFilm.getName(), "Название фильма должно сохраниться");
         assertEquals("A".repeat(200), createdFilm.getDescription(), "Описание фильма должно сохраниться");
         assertEquals(LocalDate.of(2014, 11, 6), createdFilm.getReleaseDate(), "Дата релиза должна сохраниться");
         assertEquals(169, createdFilm.getDuration(), "Продолжительность должна сохраниться");
     }
-
+    
     @Test
     void testCreateFilmWhenReleaseDateIs18951228ReturnsFilm() {
         Film film = new Film();
@@ -73,16 +73,16 @@ public class FilmControllerTest {
         film.setDescription("Фантастический фильм");
         film.setReleaseDate(LocalDate.of(1895, 12, 28));
         film.setDuration(169);
-
+        
         Film createdFilm = controller.create(film);
-
+        
         assertEquals(1L, createdFilm.getId(), "Первому фильму должен быть присвоен id = 1");
         assertEquals("Интерстеллар", createdFilm.getName(), "Название фильма должно сохраниться");
         assertEquals("Фантастический фильм", createdFilm.getDescription(), "Описание фильма должно сохраниться");
         assertEquals(LocalDate.of(1895, 12, 28), createdFilm.getReleaseDate(), "Дата релиза должна сохраниться");
         assertEquals(169, createdFilm.getDuration(), "Продолжительность должна сохраниться");
     }
-
+    
     @Test
     void testUpdateFilmWhenFilmExistsReturnsUpdatedFilm() {
         Film film = new Film();
@@ -90,20 +90,20 @@ public class FilmControllerTest {
         film.setDescription("Старое описание");
         film.setReleaseDate(LocalDate.of(2014, 11, 6));
         film.setDuration(169);
-
+        
         Film createdFilm = controller.create(film);
-
+        
         Long idFilm = createdFilm.getId();
-
+        
         Film newFilm = new Film();
         newFilm.setId(idFilm);
         newFilm.setName("Начало");
         newFilm.setDescription("Новое описание");
         newFilm.setReleaseDate(LocalDate.of(2010, 1, 8));
         newFilm.setDuration(120);
-
+        
         Film updateFilm = controller.update(newFilm);
-
+        
         assertEquals(idFilm, updateFilm.getId(), "Id фильма не должен измениться при обновлении");
         assertEquals("Начало", updateFilm.getName(), "Название фильма должно измениться");
         assertEquals("Новое описание", updateFilm.getDescription(), "Описание фильма должно измениться");

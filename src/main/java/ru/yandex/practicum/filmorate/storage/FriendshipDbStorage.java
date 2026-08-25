@@ -83,8 +83,8 @@ public class FriendshipDbStorage implements FriendshipStorage {
     @Override
     public Set<Long> getFriendsIds(Long userId) {
         String query = """
-                select addressee_id as friend_id 
-                from friendship 
+                select addressee_id as friend_id
+                from friendship
                 where requester_id = ?
                 union
                 select requester_id as friend_id

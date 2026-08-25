@@ -11,7 +11,12 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -20,8 +25,8 @@ public class UserService {
     private final FilmStorage filmStorage;
     private final FriendshipStorage friendshipStorage;
 
-    public UserService(@Qualifier("userDbStorage")UserStorage userStorage,
-                       @Qualifier("filmDbStorage")FilmStorage filmStorage,
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage,
+                       @Qualifier("filmDbStorage") FilmStorage filmStorage,
                        FriendshipStorage friendshipStorage) {
         this.userStorage = userStorage;
         this.filmStorage = filmStorage;

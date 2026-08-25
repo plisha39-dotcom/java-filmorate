@@ -16,14 +16,14 @@ import java.util.Set;
 
 public class FilmValidationTest {
     private Validator validator;
-
+    
     @BeforeEach
     void setUp() {
         validator = Validation
                 .buildDefaultValidatorFactory()
                 .getValidator();
     }
-
+    
     @Test
     void testBlankNameProducesNotBlankViolation() {
         Film film = new Film();
@@ -31,9 +31,9 @@ public class FilmValidationTest {
         film.setDescription("Фантастический фильм");
         film.setReleaseDate(LocalDate.of(2014, 11, 6));
         film.setDuration(169);
-
+        
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
-
+        
         Assertions.assertTrue(violations.stream()
                         .anyMatch(violation -> violation.getPropertyPath().toString().equals("name")
                                 && violation.getConstraintDescriptor()
@@ -42,7 +42,7 @@ public class FilmValidationTest {
                                 == NotBlank.class),
                 "Фильм с пустым названием должен нарушать ограничение @NotBlank");
     }
-
+    
     @Test
     void testTooLongDescriptionProducesSizeViolation() {
         Film film = new Film();
@@ -50,9 +50,9 @@ public class FilmValidationTest {
         film.setDescription("a".repeat(201));
         film.setReleaseDate(LocalDate.of(2014, 11, 6));
         film.setDuration(169);
-
+        
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
-
+        
         Assertions.assertTrue(violations.stream()
                         .anyMatch(violation -> violation.getPropertyPath().toString().equals("description")
                                 && violation.getConstraintDescriptor()
@@ -61,7 +61,7 @@ public class FilmValidationTest {
                                 == Size.class),
                 "Описание длиной больше 200 символов должно нарушать ограничение @Size");
     }
-
+    
     @Test
     void testNonPositiveDurationProducesPositiveViolation() {
         Film film = new Film();
@@ -69,9 +69,9 @@ public class FilmValidationTest {
         film.setDescription("Фантастический фильм");
         film.setReleaseDate(LocalDate.of(2014, 11, 6));
         film.setDuration(0);
-
+        
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
-
+        
         Assertions.assertTrue(violations.stream()
                         .anyMatch(violation -> violation.getPropertyPath().toString().equals("duration")
                                 && violation.getConstraintDescriptor()
@@ -80,7 +80,7 @@ public class FilmValidationTest {
                                 == Positive.class),
                 "Филь с продолжительностью <= 0 должен нарушать ограничение @Positive");
     }
-
+    
     @Test
     void testNullReleaseDateProducesNotNullViolation() {
         Film film = new Film();
@@ -88,9 +88,9 @@ public class FilmValidationTest {
         film.setDescription("Фантастический фильм");
         film.setReleaseDate(null);
         film.setDuration(169);
-
+        
         Set<ConstraintViolation<Film>> violations = validator.validate(film);
-
+        
         Assertions.assertTrue(violations.stream()
                         .anyMatch(violation -> violation.getPropertyPath().toString().equals("releaseDate")
                                 && violation.getConstraintDescriptor()

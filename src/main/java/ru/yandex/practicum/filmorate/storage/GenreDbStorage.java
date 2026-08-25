@@ -35,7 +35,7 @@ public class GenreDbStorage implements GenreStorage {
         try {
             Genre genre = jdbc.queryForObject(query, rowMapper, id);
             return Optional.ofNullable(genre);
-        }  catch (EmptyResultDataAccessException e) {
+        } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
         }
     }

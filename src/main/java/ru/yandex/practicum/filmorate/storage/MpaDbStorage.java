@@ -26,7 +26,7 @@ public class MpaDbStorage implements MpaStorage {
 
     @Override
     public Collection<Mpa> findAll() {
-        return jdbc.query("select mpa_id, name from mpa order by mpa_id",rowMapper);
+        return jdbc.query("select mpa_id, name from mpa order by mpa_id", rowMapper);
     }
 
     @Override
