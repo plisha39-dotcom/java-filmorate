@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.PreparedStatement;
@@ -74,7 +75,7 @@ public class UserDbStorage implements UserStorage {
         String query = "update users set email = ?, login = ?, name = ?, birthday = ? where user_id = ?";
         int rowsUpdated = jdbc.update(query, user.getEmail(), user.getLogin(), user.getName(), user.getBirthday(), user.getId());
         if (rowsUpdated == 0) {
-            throw new RuntimeException("Не удалось обновить данные");
+            throw new NotFoundException("Не удалось обновить данные");
         }
         return user;
     }

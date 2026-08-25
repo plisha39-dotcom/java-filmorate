@@ -5,26 +5,31 @@ import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.MpaStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 
 public class FilmControllerTest {
     private FilmStorage filmStorage;
     private UserStorage userStorage;
     private FilmService filmService;
     private FilmController controller;
+    private final MpaStorage mpaStorage = mock(MpaStorage.class);
+    private final GenreStorage genreStorage = mock(GenreStorage.class);
 
     @BeforeEach
     void setUp() {
         filmStorage = new InMemoryFilmStorage();
         userStorage = new InMemoryUserStorage();
         filmService = new FilmService(userStorage, filmStorage);
-        controller = new FilmController(filmStorage, filmService);
+        controller = new FilmController(filmStorage, filmService, mpaStorage, genreStorage);
     }
 
     @Test

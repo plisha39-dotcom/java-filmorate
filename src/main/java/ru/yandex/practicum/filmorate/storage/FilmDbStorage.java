@@ -5,13 +5,18 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public class FilmDbStorage implements FilmStorage {
@@ -121,7 +126,7 @@ public class FilmDbStorage implements FilmStorage {
         int rowsUpdate = jdbc.update
                 (query, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(), film.getMpa().getId(), film.getId());
         if (rowsUpdate == 0) {
-            throw new RuntimeException("Не удалось обновить данные");
+            throw new NotFoundException("Не удалось обновить данные");
         }
         deleteGenresByFilmId(film.getId());
         saveGenres(film.getId(), film.getGenres());
@@ -144,7 +149,7 @@ public class FilmDbStorage implements FilmStorage {
 
     private void saveGenres(Long filmId, Set<Genre> genres) {
         String query = "insert into film_genres(film_id, genre_id) values(?, ?)";
-        for  (Genre genre : genres) {
+        for (Genre genre : genres) {
             jdbc.update(query, filmId, genre.getId());
         }
     }
@@ -156,13 +161,13 @@ public class FilmDbStorage implements FilmStorage {
 
     private Set<Long> findLikesByFilmId(Long filmId) {
         String query = "select user_id from film_likes where film_id = ?";
-        List<Long> listLikes = jdbc.query(query, (rs, rowNum) ->  rs.getLong("user_id"), filmId);
+        List<Long> listLikes = jdbc.query(query, (rs, rowNum) -> rs.getLong("user_id"), filmId);
         return new HashSet<>(listLikes);
     }
 
     private void saveLikes(Long filmId, Set<Long> likes) {
         String query = "insert into film_likes(film_id, user_id) values(?, ?)";
-        for  (Long  like : likes) {
+        for (Long like : likes) {
             jdbc.update(query, filmId, like);
         }
     }
@@ -173,7 +178,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public void addLike(Long  filmId, Long userId) {
+    public void addLike(Long filmId, Long userId) {
         String query = "insert into film_likes(film_id, user_id) values(?, ?)";
         jdbc.update(query, filmId, userId);
     }
