@@ -36,8 +36,8 @@ public class GenreDbStorageTest {
         Collection<Genre> collection = storage.findAll();
 
         assertThat(collection).hasSize(6);
-        assertThat(collection).
-                extracting(Genre::getId)
+        assertThat(collection)
+                .extracting(Genre::getId)
                 .containsExactlyInAnyOrder(1, 2, 3, 4, 5, 6);
     }
 }

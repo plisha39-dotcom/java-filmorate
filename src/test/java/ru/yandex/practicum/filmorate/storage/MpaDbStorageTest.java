@@ -36,8 +36,8 @@ public class MpaDbStorageTest {
         Collection<Mpa> collection = storage.findAll();
 
         assertThat(collection).hasSize(5);
-        assertThat(collection).
-                extracting(Mpa::getId)
+        assertThat(collection)
+                .extracting(Mpa::getId)
                 .containsExactlyInAnyOrder(1, 2, 3, 4, 5);
     }
 }

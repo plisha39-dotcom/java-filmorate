@@ -86,8 +86,8 @@ public class UserServiceTest {
         friendship.setAddresseeId(user1.getId());
         friendship.setStatus(FriendshipStatus.UNCONFIRMED);
 
-        Mockito.when(friendshipStorage.findFriendship(user.getId(), user1.getId())).
-                thenReturn(Optional.empty()).thenReturn(Optional.of(friendship));
+        Mockito.when(friendshipStorage.findFriendship(user.getId(), user1.getId()))
+                .thenReturn(Optional.empty()).thenReturn(Optional.of(friendship));
 
         userService.addFriend(user.getId(), user1.getId());
         userService.addFriend(user.getId(), user1.getId());
