@@ -135,10 +135,10 @@ public class FilmDbStorageTest {
                 .isPresent()
                 .hasValueSatisfying(foundFilm -> {
                     assertThat(foundFilm).hasFieldOrPropertyWithValue("id", updateFilm.getId())
-                            .hasFieldOrPropertyWithValue("name", updateFilm.getName())
-                            .hasFieldOrPropertyWithValue("description", updateFilm.getDescription())
-                            .hasFieldOrPropertyWithValue("releaseDate", updateFilm.getReleaseDate())
-                            .hasFieldOrPropertyWithValue("duration", updateFilm.getDuration());
+                                         .hasFieldOrPropertyWithValue("name", updateFilm.getName())
+                                         .hasFieldOrPropertyWithValue("description", updateFilm.getDescription())
+                                         .hasFieldOrPropertyWithValue("releaseDate", updateFilm.getReleaseDate())
+                                         .hasFieldOrPropertyWithValue("duration", updateFilm.getDuration());
                     assertThat(foundFilm.getMpa().getId())
                             .isEqualTo(updateFilm.getMpa().getId());
                 });
@@ -225,5 +225,48 @@ public class FilmDbStorageTest {
                 .isPresent()
                 .hasValueSatisfying(foundFilm ->
                         assertThat(foundFilm.getLikes()).doesNotContain(user.getId()));
+    }
+
+    @Test
+    void testCreateFilmWithoutMpa() {
+        Film film = new Film();
+        film.setName("Интерстеллар");
+        film.setDescription("Фантастический фильм");
+        film.setReleaseDate(LocalDate.of(2014, 11, 6));
+        film.setDuration(169);
+
+        filmStorage.create(film);
+
+        Optional<Film> optionalFilm = filmStorage.findById(film.getId());
+
+        assertThat(optionalFilm)
+                .isPresent()
+                .hasValueSatisfying(foundFilm ->
+                        assertThat(foundFilm.getMpa()).isNull());
+    }
+
+    @Test
+    void testUpdateFilmWithNullMpa() {
+        Film film = new Film();
+        film.setName("Интерстеллар");
+        film.setDescription("Фантастический фильм");
+        film.setReleaseDate(LocalDate.of(2014, 11, 6));
+        film.setDuration(169);
+        Mpa mpa = new Mpa();
+        mpa.setId(1);
+        film.setMpa(mpa);
+
+        filmStorage.create(film);
+
+        film.setMpa(null);
+
+        filmStorage.update(film);
+
+        Optional<Film> optionalFilm = filmStorage.findById(film.getId());
+
+        assertThat(optionalFilm)
+                .isPresent()
+                .hasValueSatisfying(foundFilm ->
+                        assertThat(foundFilm.getMpa()).isNull());
     }
 }

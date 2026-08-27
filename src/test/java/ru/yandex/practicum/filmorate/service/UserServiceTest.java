@@ -54,9 +54,9 @@ public class UserServiceTest {
         userStorage.create(user1);
 
         Mockito.when(friendshipStorage.findFriendship(user1.getId(), user.getId()))
-                .thenReturn(Optional.empty());
+               .thenReturn(Optional.empty());
         Mockito.when(friendshipStorage.findFriendship(user.getId(), user1.getId()))
-                .thenReturn(Optional.empty());
+               .thenReturn(Optional.empty());
 
         userService.addFriend(user.getId(), user1.getId());
 
@@ -87,7 +87,7 @@ public class UserServiceTest {
         friendship.setStatus(FriendshipStatus.UNCONFIRMED);
 
         Mockito.when(friendshipStorage.findFriendship(user.getId(), user1.getId()))
-                .thenReturn(Optional.empty()).thenReturn(Optional.of(friendship));
+               .thenReturn(Optional.empty()).thenReturn(Optional.of(friendship));
 
         userService.addFriend(user.getId(), user1.getId());
         userService.addFriend(user.getId(), user1.getId());
@@ -113,21 +113,10 @@ public class UserServiceTest {
 
         userStorage.create(user1);
 
-        userService.addFriend(user.getId(), user1.getId());
-
         userService.removeFriend(user.getId(), user1.getId());
 
-        User savedUser = userStorage.findById(user.getId()).orElseThrow();
-        User savedUser1 = userStorage.findById(user1.getId()).orElseThrow();
-
-        Assertions.assertTrue(
-                savedUser.getFriends().isEmpty(),
-                "Список друзей первого пользователя должен быть пустым"
-        );
-        Assertions.assertTrue(
-                savedUser1.getFriends().isEmpty(),
-                "Список друзей второго пользователя должен быть пустым"
-        );
+        Mockito.verify(friendshipStorage, Mockito.times(1))
+               .deleteFriendship(user.getId(), user1.getId());
     }
 
     @Test
@@ -157,7 +146,7 @@ public class UserServiceTest {
         userStorage.create(user2);
 
         Mockito.when(friendshipStorage.getFriendsIds(user.getId()))
-                .thenReturn(Set.of(user1.getId(), user2.getId()));
+               .thenReturn(Set.of(user1.getId(), user2.getId()));
 
         List<User> friends = userService.getFriends(user.getId());
 
@@ -212,9 +201,9 @@ public class UserServiceTest {
         userStorage.create(user2);
 
         Mockito.when(friendshipStorage.getFriendsIds(userA.getId()))
-                .thenReturn(Set.of(user1.getId(), user2.getId()));
+               .thenReturn(Set.of(user1.getId(), user2.getId()));
         Mockito.when(friendshipStorage.getFriendsIds(userB.getId()))
-                .thenReturn(Set.of(user1.getId()));
+               .thenReturn(Set.of(user1.getId()));
 
         Collection<User> friends = userService.getCommonFriends(userA.getId(), userB.getId());
 
@@ -226,7 +215,7 @@ public class UserServiceTest {
     }
 
     @Test
-    void testAddFriendThrowsNotFoundExceptionWhenUserDoesNotExist() {
+    void testAddFriendWithUnknownFriendThrowsNotFoundException() {
         User user = new User();
         user.setName("Борис");
         user.setLogin("BOR");
@@ -235,16 +224,14 @@ public class UserServiceTest {
 
         userStorage.create(user);
 
-        Assertions.assertThrows(NotFoundException.class,
+        Assertions.assertThrows(
+                NotFoundException.class,
                 () -> userService.addFriend(user.getId(), 999L),
-                "При добавлении несуществующего друга должно выбрасываться NotFoundException");
-
-        User savedUser = userStorage.findById(user.getId()).orElseThrow();
-
-        Assertions.assertTrue(
-                savedUser.getFriends().isEmpty(),
-                "Список друзей первого пользователя должен быть пустым"
+                "При добавлении несуществующего друга должно выбрасываться NotFoundException"
         );
+
+        Mockito.verify(friendshipStorage, Mockito.never())
+               .addFriendship(Mockito.anyLong(), Mockito.anyLong());
     }
 
     @Test
@@ -270,7 +257,7 @@ public class UserServiceTest {
 
         Assertions.assertTrue(
                 filmStorage.findById(savedFilm.getId()).orElseThrow()
-                        .getLikes().contains(savedUser.getId()),
+                           .getLikes().contains(savedUser.getId()),
                 "Перед удалением пользователя его лайк должен находиться у фильма"
         );
 
@@ -283,7 +270,7 @@ public class UserServiceTest {
 
         Assertions.assertFalse(
                 filmStorage.findById(savedFilm.getId()).orElseThrow()
-                        .getLikes().contains(savedUser.getId()),
+                           .getLikes().contains(savedUser.getId()),
                 "Лайки удалённого пользователя должны быть очищены"
         );
     }

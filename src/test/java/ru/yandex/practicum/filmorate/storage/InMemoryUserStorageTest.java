@@ -33,10 +33,6 @@ public class InMemoryUserStorageTest {
 
         userStorage.create(user1);
 
-        User savedUser = userStorage.findById(user.getId()).orElseThrow();
-
-        savedUser.getFriends().add(user1.getId());
-
         User updatedUser = new User();
         updatedUser.setId(user.getId());
         updatedUser.setName("Новое имя");
@@ -52,17 +48,6 @@ public class InMemoryUserStorageTest {
                 "Новое имя",
                 actualUser.getName(),
                 "Имя пользователя должно обновиться"
-        );
-
-        Assertions.assertTrue(
-                actualUser.getFriends().contains(user1.getId()),
-                "После обновления должен сохраниться ID друга"
-        );
-
-        Assertions.assertEquals(
-                1,
-                actualUser.getFriends().size(),
-                "Количество друзей должно остаться равным 1"
         );
     }
 
@@ -139,21 +124,11 @@ public class InMemoryUserStorageTest {
 
         userStorage.create(user1);
 
-        User savedUser = userStorage.findById(user.getId()).orElseThrow();
-
-        savedUser.getFriends().add(user1.getId());
-
         userStorage.delete(user1.getId());
 
         Assertions.assertTrue(
                 userStorage.findById(user1.getId()).isEmpty(),
                 "Удалённый пользователь не должен находиться в хранилище"
-        );
-
-        Assertions.assertFalse(
-                userStorage.findById(user.getId()).orElseThrow()
-                        .getFriends().contains(user1.getId()),
-                "ID удалённого пользователя должен быть удалён из друзей"
         );
     }
 }
