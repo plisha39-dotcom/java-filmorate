@@ -273,5 +273,6 @@ public class UserServiceTest {
                            .getLikes().contains(savedUser.getId()),
                 "Лайки удалённого пользователя должны быть очищены"
         );
+        Mockito.verify(friendshipStorage).deleteFriendshipsByUser(savedUser.getId());
     }
 }

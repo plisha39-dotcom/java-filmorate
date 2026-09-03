@@ -17,7 +17,8 @@ public class FilmService {
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
 
-    public FilmService(@Qualifier("userDbStorage") UserStorage userStorage, @Qualifier("filmDbStorage") FilmStorage filmStorage) {
+    public FilmService(@Qualifier("userDbStorage") UserStorage userStorage, @Qualifier("filmDbStorage")
+    FilmStorage filmStorage) {
         this.userStorage = userStorage;
         this.filmStorage = filmStorage;
     }
@@ -67,5 +68,11 @@ public class FilmService {
     private void checkUserExists(Long userId) {
         userStorage.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
+    }
+
+    public void deleteFilm(Long filmId) {
+        getFilmById(filmId);
+        filmStorage.delete(filmId);
+        log.info("Фильм с id {} успешно удален", filmId);
     }
 }

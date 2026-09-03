@@ -7,12 +7,14 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -268,5 +270,35 @@ public class FilmDbStorageTest {
                 .isPresent()
                 .hasValueSatisfying(foundFilm ->
                         assertThat(foundFilm.getMpa()).isNull());
+    }
+
+    @Test
+    void testDeleteFilmRemovesLikesAndGenres() {
+        Film film = new Film();
+        film.setName("Тестовый фильм");
+        film.setDescription("Описание");
+        film.setReleaseDate(LocalDate.of(2020, 1, 1));
+        film.setDuration(120);
+
+        Mpa mpa = new Mpa();
+        mpa.setId(1);
+        film.setMpa(mpa);
+
+        Genre genre = new Genre();
+        genre.setId(1);
+        film.setGenres(Set.of(genre));
+
+        filmStorage.create(film);
+        Long filmId = film.getId();
+
+        // Добавляем лайк
+        User user = new User();
+        user.setLogin("test"); user.setEmail("test@test.ru"); user.setBirthday(LocalDate.of(1990,1,1));
+        userStorage.create(user);
+        filmStorage.addLike(filmId, user.getId());
+
+        filmStorage.delete(filmId);
+
+        assertThat(filmStorage.findById(filmId)).isEmpty();
     }
 }

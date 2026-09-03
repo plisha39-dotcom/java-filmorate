@@ -75,7 +75,7 @@ public class UserService {
 
     private User getUserById(Long userId) {
         return userStorage.findById(userId)
-                          .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
+                .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
     }
 
     public List<User> getFriends(Long userId) {
@@ -96,12 +96,10 @@ public class UserService {
 
     public void deleteUser(Long userId) {
         getUserById(userId);
-        for (Film film : filmStorage.findAll()) {
-            if (film.getLikes().contains(userId)) {
-                filmStorage.removeLike(film.getId(), userId);
-            }
-        }
+        filmStorage.removeLikesByUser(userId);
+        friendshipStorage.deleteFriendshipsByUser(userId);
         userStorage.delete(userId);
+        log.info("Пользователь с id {} удален вместе с лайками и друзьями", userId);
     }
 }
 

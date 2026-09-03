@@ -94,4 +94,10 @@ public class FriendshipDbStorage implements FriendshipStorage {
         List<Long> friendIds = jdbc.query(query, (rs, rowNum) -> rs.getLong("friend_id"), userId, userId);
         return new HashSet<>(friendIds);
     }
+
+    @Override
+    public void deleteFriendshipsByUser(Long userId) {
+        String query = "delete from friendship where requester_id = ? or addressee_id = ?";
+        jdbc.update(query, userId, userId);
+    }
 }

@@ -196,5 +196,23 @@ public class FriendshipDbStorageTest {
         assertThat(friendship)
                 .containsExactlyInAnyOrder(user1.getId(), user2.getId());
     }
+
+    @Test
+    void testDeleteFriendshipsByUser() {
+        User user1 = new User(); user1.setLogin("u1"); user1.setEmail("u1@t.ru"); user1.setBirthday(LocalDate.now());
+        User user2 = new User(); user2.setLogin("u2"); user2.setEmail("u2@t.ru"); user2.setBirthday(LocalDate.now());
+        User user3 = new User(); user3.setLogin("u3"); user3.setEmail("u3@t.ru"); user3.setBirthday(LocalDate.now());
+
+        userStorage.create(user1); userStorage.create(user2); userStorage.create(user3);
+
+        friendshipStorage.addFriendship(user1.getId(), user2.getId());
+        friendshipStorage.addFriendship(user3.getId(), user1.getId());
+
+        // Удаляем все связи user1
+        friendshipStorage.deleteFriendshipsByUser(user1.getId());
+
+        assertThat(friendshipStorage.findFriendship(user1.getId(), user2.getId())).isEmpty();
+        assertThat(friendshipStorage.findFriendship(user3.getId(), user1.getId())).isEmpty();
+    }
 }
 

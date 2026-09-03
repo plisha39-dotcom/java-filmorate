@@ -229,4 +229,10 @@ public class FilmDbStorage implements FilmStorage {
         String query = "delete from film_likes where film_id = ? and user_id = ?";
         jdbc.update(query, filmId, userId);
     }
+
+    @Override
+    public void removeLikesByUser(Long userId) {
+        String query = "delete from film_likes where user_id = ?";
+        jdbc.update(query, userId);
+    }
 }
