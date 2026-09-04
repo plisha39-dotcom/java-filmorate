@@ -327,7 +327,7 @@ public class FilmDbStorageTest {
         filmStorage.addLike(film2.getId(), user1.getId());
         filmStorage.addLike(film.getId(), user1.getId());
 
-        List<Film> films = filmStorage.commonFilms(user.getId(), user1.getId());
+        List<Film> films = filmStorage.getCommonFilms(user.getId(), user1.getId());
 
         assertThat(films).hasSize(1);
         assertThat(films)
@@ -378,7 +378,7 @@ public class FilmDbStorageTest {
         filmStorage.addLike(film.getId(), user.getId());
         filmStorage.addLike(film1.getId(), user1.getId());
 
-        List<Film> films = filmStorage.commonFilms(user.getId(), user1.getId());
+        List<Film> films = filmStorage.getCommonFilms(user.getId(), user1.getId());
 
         assertThat(films).isEmpty();
     }
@@ -437,7 +437,7 @@ public class FilmDbStorageTest {
         filmStorage.addLike(film1.getId(), user1.getId());
         filmStorage.addLike(film1.getId(), user2.getId());
 
-        List<Film> films = filmStorage.commonFilms(user.getId(), user1.getId());
+        List<Film> films = filmStorage.getCommonFilms(user.getId(), user1.getId());
 
         assertThat(films)
                 .extracting(Film::getId)

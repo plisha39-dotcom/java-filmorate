@@ -62,7 +62,7 @@ public class FilmService {
     public List<Film> getCommonFilms(Long userId, Long friendId) {
         checkUserExists(userId);
         checkUserExists(friendId);
-        return filmStorage.commonFilms(userId, friendId);
+        return filmStorage.getCommonFilms(userId, friendId);
     }
 
     private Film getFilmById(Long filmId) {
@@ -74,6 +74,4 @@ public class FilmService {
         userStorage.findById(userId)
                    .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
     }
-
-
 }

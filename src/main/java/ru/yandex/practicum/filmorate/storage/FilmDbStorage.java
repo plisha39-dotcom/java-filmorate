@@ -222,7 +222,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> commonFilms(Long userId, Long friendId) {
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
         String query = """
                 select f.film_id,
                        f.name AS film_name,
