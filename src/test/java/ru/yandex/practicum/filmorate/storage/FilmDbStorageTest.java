@@ -291,7 +291,6 @@ public class FilmDbStorageTest {
         filmStorage.create(film);
         Long filmId = film.getId();
 
-        // Добавляем лайк
         User user = new User();
         user.setLogin("test"); user.setEmail("test@test.ru"); user.setBirthday(LocalDate.of(1990,1,1));
         userStorage.create(user);

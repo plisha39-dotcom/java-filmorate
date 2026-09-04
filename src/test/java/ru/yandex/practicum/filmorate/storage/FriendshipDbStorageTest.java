@@ -208,7 +208,6 @@ public class FriendshipDbStorageTest {
         friendshipStorage.addFriendship(user1.getId(), user2.getId());
         friendshipStorage.addFriendship(user3.getId(), user1.getId());
 
-        // Удаляем все связи user1
         friendshipStorage.deleteFriendshipsByUser(user1.getId());
 
         assertThat(friendshipStorage.findFriendship(user1.getId(), user2.getId())).isEmpty();
