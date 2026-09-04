@@ -36,27 +36,12 @@ public class FilmService {
         log.info("Пользователь userId={} удалил лайк фильму filmId={}", userId, film.getId());
     }
 
-    public List<Film> getPopularFilms(int count) {
+    public List<Film> getPopularFilms(int count, Integer genreId, Integer year) {
         if (count < 0) {
             log.warn("Ошибка валидации: count={} не может быть отрицательным", count);
             throw new ValidationException("Количество фильмов не может быть отрицательным");
         }
-        List<Film> popularFilms = filmStorage.findAll()
-                                             .stream()
-                                             .sorted((film1, film2) -> Integer.compare(
-                                                     film2.getLikes().size(),
-                                                     film1.getLikes().size()
-                                             ))
-                                             .limit(count)
-                                             .toList();
-
-        log.debug(
-                "Получен список популярных фильмов: requestedCount={}, resultCount={}",
-                count,
-                popularFilms.size()
-        );
-
-        return popularFilms;
+        return filmStorage.getPopularFilms(count, genreId, year);
     }
 
     public List<Film> getCommonFilms(Long userId, Long friendId) {
