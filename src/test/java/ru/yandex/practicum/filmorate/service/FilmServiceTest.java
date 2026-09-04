@@ -233,4 +233,19 @@ public class FilmServiceTest {
                 () -> filmService.getPopularFilms(-1),
                 "При отрицательном количестве фильмов должна выбрасываться ValidationException");
     }
+
+    @Test
+    void testGetCommonFilmsThrowsNotFoundExceptionWhenFriendDoesNotExist() {
+        User user = new User();
+        user.setName("Борис");
+        user.setLogin("BOR");
+        user.setEmail("bor@yandex.ru");
+        user.setBirthday(LocalDate.of(1999, 1, 15));
+
+        userStorage.create(user);
+
+        Assertions.assertThrows(NotFoundException.class,
+                () -> filmService.getCommonFilms(user.getId(), 999L),
+                "При отсутствии второго пользователя должен выброситься NotFoundException");
+    }
 }

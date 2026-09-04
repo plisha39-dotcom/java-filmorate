@@ -4,7 +4,15 @@ import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -17,6 +25,7 @@ import ru.yandex.practicum.filmorate.storage.MpaStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 @RestController
@@ -44,13 +53,20 @@ public class FilmController {
     @GetMapping("/{id}")
     public Film getFilmById(@PathVariable Long id) {
         return filmStorage.findById(id)
-                .orElseThrow(() -> new NotFoundException("Фильм с id " + id + " не найден"));
+                          .orElseThrow(() -> new NotFoundException("Фильм с id " + id + " не найден"));
     }
 
     @GetMapping("/popular")
     public Collection<Film> popularFilms(
             @RequestParam(defaultValue = "10") int count) {
         return filmService.getPopularFilms(count);
+    }
+
+    @GetMapping("/common")
+    public List<Film> commonFilms(
+            @RequestParam Long userId,
+            @RequestParam Long friendId) {
+        return filmService.getCommonFilms(userId, friendId);
     }
 
     @PostMapping
