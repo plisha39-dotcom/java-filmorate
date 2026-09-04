@@ -102,6 +102,7 @@ public class InMemoryFilmStorage implements FilmStorage {
                 .limit(count)
                 .toList();
     }
+
     private long getNextId() {
         return ++currentId;
     }
