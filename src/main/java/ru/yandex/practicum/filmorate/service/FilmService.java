@@ -42,13 +42,13 @@ public class FilmService {
             throw new ValidationException("Количество фильмов не может быть отрицательным");
         }
         List<Film> popularFilms = filmStorage.findAll()
-                .stream()
-                .sorted((film1, film2) -> Integer.compare(
-                        film2.getLikes().size(),
-                        film1.getLikes().size()
-                ))
-                .limit(count)
-                .toList();
+                                             .stream()
+                                             .sorted((film1, film2) -> Integer.compare(
+                                                     film2.getLikes().size(),
+                                                     film1.getLikes().size()
+                                             ))
+                                             .limit(count)
+                                             .toList();
 
         log.debug(
                 "Получен список популярных фильмов: requestedCount={}, resultCount={}",
@@ -59,13 +59,19 @@ public class FilmService {
         return popularFilms;
     }
 
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        checkUserExists(userId);
+        checkUserExists(friendId);
+        return filmStorage.getCommonFilms(userId, friendId);
+    }
+
     private Film getFilmById(Long filmId) {
         return filmStorage.findById(filmId)
-                .orElseThrow(() -> new NotFoundException("Фильм с id " + filmId + " не найден"));
+                          .orElseThrow(() -> new NotFoundException("Фильм с id " + filmId + " не найден"));
     }
 
     private void checkUserExists(Long userId) {
         userStorage.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
+                   .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
     }
 }
