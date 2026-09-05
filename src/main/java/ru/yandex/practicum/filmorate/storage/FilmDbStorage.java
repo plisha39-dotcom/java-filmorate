@@ -275,7 +275,7 @@ public class FilmDbStorage implements FilmStorage {
                 WHERE (? IS NULL OR fg.genre_id = ?)
                   AND (? IS NULL OR EXTRACT(YEAR FROM f.release_date) = ?)
                 GROUP BY f.film_id, m.mpa_id, m.name
-                ORDER BY COUNT(l.user_id) DESC
+                ORDER BY COUNT(DISTINCT l.user_id) DESC
                 LIMIT ?
                 """;
 
