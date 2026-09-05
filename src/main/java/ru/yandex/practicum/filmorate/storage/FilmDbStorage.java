@@ -61,16 +61,7 @@ public class FilmDbStorage implements FilmStorage {
                 left join mpa m on f.mpa_id = m.mpa_id
                 """;
         Collection<Film> films = jdbc.query(query, rowMapper);
-        List<Long> filmIds = films.stream().map(Film::getId).toList();
-        Map<Long, Set<Genre>> genresByFilmId = findGenresByFilmIds(filmIds);
-        Map<Long, Set<Long>> likesByFilmId = findLikesByFilmIds(filmIds);
-        for (Film film : films) {
-            Long filmId = film.getId();
-            Set<Genre> genres = genresByFilmId.getOrDefault(filmId, new HashSet<>());
-            film.setGenres(genres);
-            Set<Long> likes = likesByFilmId.getOrDefault(filmId, new HashSet<>());
-            film.setLikes(likes);
-        }
+        populateLikesAndGenres(films);
         return films;
     }
 
@@ -234,5 +225,47 @@ public class FilmDbStorage implements FilmStorage {
     public void removeLikesByUser(Long userId) {
         String query = "delete from film_likes where user_id = ?";
         jdbc.update(query, userId);
+    }
+
+    @Override
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        String query = """
+                select f.film_id,
+                       f.name AS film_name,
+                       f.description,
+                       f.duration,
+                       f.release_date,
+                       m.mpa_id,
+                       m.name AS mpa_name
+                from films f
+                join film_likes fl
+                    on f.film_id = fl.film_id
+                left join mpa m on f.mpa_id = m.mpa_id
+                where f.film_id IN (
+                    select film_id
+                    from film_likes
+                    where user_id = ? or user_id = ?
+                    group by film_id
+                    having count(film_id) = 2
+                )
+                group by f.film_id
+                order by count(fl.user_id) DESC
+                """;
+        List<Film> films = jdbc.query(query, rowMapper, userId, friendId);
+        populateLikesAndGenres(films);
+        return films;
+    }
+
+    private void populateLikesAndGenres(Collection<Film> films) {
+        List<Long> filmIds = films.stream().map(Film::getId).toList();
+        Map<Long, Set<Genre>> genresByFilmId = findGenresByFilmIds(filmIds);
+        Map<Long, Set<Long>> likesByFilmId = findLikesByFilmIds(filmIds);
+        for (Film film : films) {
+            Long filmId = film.getId();
+            Set<Genre> genres = genresByFilmId.getOrDefault(filmId, new HashSet<>());
+            film.setGenres(genres);
+            Set<Long> likes = likesByFilmId.getOrDefault(filmId, new HashSet<>());
+            film.setLikes(likes);
+        }
     }
 }

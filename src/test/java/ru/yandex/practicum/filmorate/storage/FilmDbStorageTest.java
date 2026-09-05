@@ -13,6 +13,7 @@ import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -299,5 +300,178 @@ public class FilmDbStorageTest {
         filmStorage.delete(filmId);
 
         assertThat(filmStorage.findById(filmId)).isEmpty();
+    }
+
+    @Test
+    void testCommonFilm() {
+        Film film = new Film();
+        film.setName("Интерстеллар");
+        film.setDescription("Фантастический фильм");
+        film.setReleaseDate(LocalDate.of(2014, 11, 6));
+        film.setDuration(169);
+        Mpa mpa = new Mpa();
+        mpa.setId(1);
+        film.setMpa(mpa);
+
+        filmStorage.create(film);
+
+        Film film1 = new Film();
+        film1.setName("Начало");
+        film1.setDescription("Новый фильм");
+        film1.setReleaseDate(LocalDate.of(2000, 11, 11));
+        film1.setDuration(150);
+        Mpa mpa1 = new Mpa();
+        mpa1.setId(1);
+        film1.setMpa(mpa1);
+
+        filmStorage.create(film1);
+
+        Film film2 = new Film();
+        film2.setName("Новое имя");
+        film2.setDescription("Новый фильм 2");
+        film2.setReleaseDate(LocalDate.of(2000, 11, 11));
+        film2.setDuration(150);
+        Mpa mpa2 = new Mpa();
+        mpa2.setId(1);
+        film2.setMpa(mpa2);
+
+        filmStorage.create(film2);
+
+        User user = new User();
+        user.setName("Борис");
+        user.setLogin("BOR");
+        user.setEmail("bor@yandex.ru");
+        user.setBirthday(LocalDate.of(1999, 1, 15));
+
+        userStorage.create(user);
+
+        User user1 = new User();
+        user1.setName("Иван");
+        user1.setLogin("ivan");
+        user1.setEmail("ivan@yandex.ru");
+        user1.setBirthday(LocalDate.of(2000, 12, 15));
+
+        userStorage.create(user1);
+
+        filmStorage.addLike(film.getId(), user.getId());
+        filmStorage.addLike(film1.getId(), user1.getId());
+        filmStorage.addLike(film2.getId(), user1.getId());
+        filmStorage.addLike(film.getId(), user1.getId());
+
+        List<Film> films = filmStorage.getCommonFilms(user.getId(), user1.getId());
+
+        assertThat(films).hasSize(1);
+        assertThat(films)
+                .extracting(Film::getId)
+                .containsExactly(film.getId());
+    }
+
+    @Test
+    void testNotCommonFilm() {
+        Film film = new Film();
+        film.setName("Интерстеллар");
+        film.setDescription("Фантастический фильм");
+        film.setReleaseDate(LocalDate.of(2014, 11, 6));
+        film.setDuration(169);
+        Mpa mpa = new Mpa();
+        mpa.setId(1);
+        film.setMpa(mpa);
+
+        filmStorage.create(film);
+
+        Film film1 = new Film();
+        film1.setName("Начало");
+        film1.setDescription("Новый фильм");
+        film1.setReleaseDate(LocalDate.of(2000, 11, 11));
+        film1.setDuration(150);
+        Mpa mpa1 = new Mpa();
+        mpa1.setId(1);
+        film1.setMpa(mpa1);
+
+        filmStorage.create(film1);
+
+        User user = new User();
+        user.setName("Борис");
+        user.setLogin("BOR");
+        user.setEmail("bor@yandex.ru");
+        user.setBirthday(LocalDate.of(1999, 1, 15));
+
+        userStorage.create(user);
+
+        User user1 = new User();
+        user1.setName("Иван");
+        user1.setLogin("ivan");
+        user1.setEmail("ivan@yandex.ru");
+        user1.setBirthday(LocalDate.of(2000, 12, 15));
+
+        userStorage.create(user1);
+
+        filmStorage.addLike(film.getId(), user.getId());
+        filmStorage.addLike(film1.getId(), user1.getId());
+
+        List<Film> films = filmStorage.getCommonFilms(user.getId(), user1.getId());
+
+        assertThat(films).isEmpty();
+    }
+
+    @Test
+    void testOrderOfPopularity() {
+        Film film = new Film();
+        film.setName("Интерстеллар");
+        film.setDescription("Фантастический фильм");
+        film.setReleaseDate(LocalDate.of(2014, 11, 6));
+        film.setDuration(169);
+        Mpa mpa = new Mpa();
+        mpa.setId(1);
+        film.setMpa(mpa);
+
+        filmStorage.create(film);
+
+        Film film1 = new Film();
+        film1.setName("Начало");
+        film1.setDescription("Новый фильм");
+        film1.setReleaseDate(LocalDate.of(2000, 11, 11));
+        film1.setDuration(150);
+        Mpa mpa1 = new Mpa();
+        mpa1.setId(1);
+        film1.setMpa(mpa1);
+
+        filmStorage.create(film1);
+
+        User user = new User();
+        user.setName("Борис");
+        user.setLogin("BOR");
+        user.setEmail("bor@yandex.ru");
+        user.setBirthday(LocalDate.of(1999, 1, 15));
+
+        userStorage.create(user);
+
+        User user1 = new User();
+        user1.setName("Иван");
+        user1.setLogin("ivan");
+        user1.setEmail("ivan@yandex.ru");
+        user1.setBirthday(LocalDate.of(2000, 12, 15));
+
+        userStorage.create(user1);
+
+        User user2 = new User();
+        user2.setName("Вася");
+        user2.setLogin("Vasya");
+        user2.setEmail("vs@yandex.ru");
+        user2.setBirthday(LocalDate.of(2001, 6, 1));
+
+        userStorage.create(user2);
+
+        filmStorage.addLike(film.getId(), user.getId());
+        filmStorage.addLike(film1.getId(), user.getId());
+        filmStorage.addLike(film.getId(), user1.getId());
+        filmStorage.addLike(film1.getId(), user1.getId());
+        filmStorage.addLike(film1.getId(), user2.getId());
+
+        List<Film> films = filmStorage.getCommonFilms(user.getId(), user1.getId());
+
+        assertThat(films)
+                .extracting(Film::getId)
+                .containsExactly(film1.getId(), film.getId());
     }
 }
