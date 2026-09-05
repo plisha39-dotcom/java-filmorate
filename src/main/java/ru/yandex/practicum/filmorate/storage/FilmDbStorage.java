@@ -257,7 +257,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private void populateLikesAndGenres(Collection<Film> films) {
-        List<Long> filmIds = films.stream().map(Film::getId).toList();
+        List<Long> filmIds = films.stream().map(Film::getId).collect(Collectors.toList());
         Map<Long, Set<Genre>> genresByFilmId = findGenresByFilmIds(filmIds);
         Map<Long, Set<Long>> likesByFilmId = findLikesByFilmIds(filmIds);
         for (Film film : films) {
