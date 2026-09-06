@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @Component
 @Slf4j
@@ -96,11 +97,24 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public List<Film> getPopularFilms(int count, Integer genreId, Integer year) {
         return films.values().stream()
-                .filter(film -> genreId == null || film.getGenres().stream().anyMatch(g -> g.getId() == genreId))
-                .filter(film -> year == null || film.getReleaseDate().getYear() == year)
-                .sorted((film1, film2) -> Integer.compare(film2.getLikes().size(), film1.getLikes().size()))
-                .limit(count)
-                .toList();
+                    .filter(film -> genreId == null || film.getGenres().stream().anyMatch(g -> g.getId() == genreId))
+                    .filter(film -> year == null || film.getReleaseDate().getYear() == year)
+                    .sorted((film1, film2) -> Integer.compare(film2.getLikes().size(), film1.getLikes().size()))
+                    .limit(count)
+                    .toList();
+    }
+
+    @Override
+    public Map<Long, Set<Long>> getLikesFromAllUsers() {
+        Map<Long, Set<Long>> allLikes = new HashMap<>();
+        for (Film film : films.values()) {
+            Set<Long> likes = film.getLikes();
+            for (Long userId : likes) {
+                allLikes.computeIfAbsent(userId, id -> new HashSet<>())
+                        .add(film.getId());
+            }
+        }
+        return allLikes;
     }
 
     private long getNextId() {
