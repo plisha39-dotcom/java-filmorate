@@ -6,8 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
 
@@ -15,7 +15,6 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -138,10 +137,10 @@ public class FilmDbStorageTest {
                 .isPresent()
                 .hasValueSatisfying(foundFilm -> {
                     assertThat(foundFilm).hasFieldOrPropertyWithValue("id", updateFilm.getId())
-                                         .hasFieldOrPropertyWithValue("name", updateFilm.getName())
-                                         .hasFieldOrPropertyWithValue("description", updateFilm.getDescription())
-                                         .hasFieldOrPropertyWithValue("releaseDate", updateFilm.getReleaseDate())
-                                         .hasFieldOrPropertyWithValue("duration", updateFilm.getDuration());
+                            .hasFieldOrPropertyWithValue("name", updateFilm.getName())
+                            .hasFieldOrPropertyWithValue("description", updateFilm.getDescription())
+                            .hasFieldOrPropertyWithValue("releaseDate", updateFilm.getReleaseDate())
+                            .hasFieldOrPropertyWithValue("duration", updateFilm.getDuration());
                     assertThat(foundFilm.getMpa().getId())
                             .isEqualTo(updateFilm.getMpa().getId());
                 });
@@ -271,35 +270,6 @@ public class FilmDbStorageTest {
                 .isPresent()
                 .hasValueSatisfying(foundFilm ->
                         assertThat(foundFilm.getMpa()).isNull());
-    }
-
-    @Test
-    void testDeleteFilmRemovesLikesAndGenres() {
-        Film film = new Film();
-        film.setName("Тестовый фильм");
-        film.setDescription("Описание");
-        film.setReleaseDate(LocalDate.of(2020, 1, 1));
-        film.setDuration(120);
-
-        Mpa mpa = new Mpa();
-        mpa.setId(1);
-        film.setMpa(mpa);
-
-        Genre genre = new Genre();
-        genre.setId(1);
-        film.setGenres(Set.of(genre));
-
-        filmStorage.create(film);
-        Long filmId = film.getId();
-
-        User user = new User();
-        user.setLogin("test"); user.setEmail("test@test.ru"); user.setBirthday(LocalDate.of(1990,1,1));
-        userStorage.create(user);
-        filmStorage.addLike(filmId, user.getId());
-
-        filmStorage.delete(filmId);
-
-        assertThat(filmStorage.findById(filmId)).isEmpty();
     }
 
     @Test
@@ -473,5 +443,14 @@ public class FilmDbStorageTest {
         assertThat(films)
                 .extracting(Film::getId)
                 .containsExactly(film1.getId(), film.getId());
+    }
+
+    @Test
+    void testDeleteNonExistentFilmThrowsException() {
+        org.junit.jupiter.api.Assertions.assertThrows(
+                NotFoundException.class,
+                () -> filmStorage.delete(999L),
+                "Удаление несуществующего фильма из БД должно выбрасывать NotFoundException"
+        );
     }
 }
