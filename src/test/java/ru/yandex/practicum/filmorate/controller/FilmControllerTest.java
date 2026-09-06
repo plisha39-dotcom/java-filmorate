@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
@@ -13,7 +14,7 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
 public class FilmControllerTest {
@@ -109,5 +110,27 @@ public class FilmControllerTest {
         assertEquals("Новое описание", updateFilm.getDescription(), "Описание фильма должно измениться");
         assertEquals(LocalDate.of(2010, 1, 8), updateFilm.getReleaseDate(), "Дата релиза должна измениться");
         assertEquals(120, updateFilm.getDuration(), "Продолжительность должна измениться");
+    }
+
+    @Test
+    void testDeleteExistingFilm() {
+        Film film = new Film();
+        film.setName("Тестовый фильм");
+        film.setDescription("Описание");
+        film.setReleaseDate(LocalDate.of(2020, 1, 1));
+        film.setDuration(120);
+        Film createdFilm = controller.create(film);
+
+        controller.deleteFilm(createdFilm.getId());
+
+        assertTrue(filmStorage.findById(createdFilm.getId()).isEmpty(),
+                "Фильм должен быть удален из хранилища");
+    }
+
+    @Test
+    void testDeleteNonExistentFilmThrowsException() {
+        assertThrows(NotFoundException.class,
+                () -> controller.deleteFilm(999L),
+                "Удаление несуществующего фильма должно выбрасывать NotFoundException");
     }
 }

@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
@@ -136,10 +137,10 @@ public class FilmDbStorageTest {
                 .isPresent()
                 .hasValueSatisfying(foundFilm -> {
                     assertThat(foundFilm).hasFieldOrPropertyWithValue("id", updateFilm.getId())
-                                         .hasFieldOrPropertyWithValue("name", updateFilm.getName())
-                                         .hasFieldOrPropertyWithValue("description", updateFilm.getDescription())
-                                         .hasFieldOrPropertyWithValue("releaseDate", updateFilm.getReleaseDate())
-                                         .hasFieldOrPropertyWithValue("duration", updateFilm.getDuration());
+                            .hasFieldOrPropertyWithValue("name", updateFilm.getName())
+                            .hasFieldOrPropertyWithValue("description", updateFilm.getDescription())
+                            .hasFieldOrPropertyWithValue("releaseDate", updateFilm.getReleaseDate())
+                            .hasFieldOrPropertyWithValue("duration", updateFilm.getDuration());
                     assertThat(foundFilm.getMpa().getId())
                             .isEqualTo(updateFilm.getMpa().getId());
                 });
@@ -442,5 +443,14 @@ public class FilmDbStorageTest {
         assertThat(films)
                 .extracting(Film::getId)
                 .containsExactly(film1.getId(), film.getId());
+    }
+
+    @Test
+    void testDeleteNonExistentFilmThrowsException() {
+        org.junit.jupiter.api.Assertions.assertThrows(
+                NotFoundException.class,
+                () -> filmStorage.delete(999L),
+                "Удаление несуществующего фильма из БД должно выбрасывать NotFoundException"
+        );
     }
 }

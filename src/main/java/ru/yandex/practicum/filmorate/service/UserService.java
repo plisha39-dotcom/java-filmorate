@@ -13,10 +13,10 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
+import java.util.HashSet;
 import java.util.Set;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -75,7 +75,7 @@ public class UserService {
 
     private User getUserById(Long userId) {
         return userStorage.findById(userId)
-                          .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
+                .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
     }
 
     public List<User> getFriends(Long userId) {
@@ -102,6 +102,7 @@ public class UserService {
             }
         }
         userStorage.delete(userId);
+        log.info("Пользователь с id {} удален вместе с лайками и друзьями", userId);
     }
 }
 
