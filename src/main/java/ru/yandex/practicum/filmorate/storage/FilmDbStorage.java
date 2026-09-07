@@ -270,7 +270,7 @@ public class FilmDbStorage implements FilmStorage {
         String query = "delete from film_likes where user_id = ?";
         jdbc.update(query, userId);
     }
-}
+
     public List<Film> getPopularFilms(int count, Integer genreId, Integer year) {
         String query = """
                 SELECT f.film_id, f.name AS film_name, f.description, f.duration, f.release_date,
