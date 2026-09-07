@@ -82,6 +82,10 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void delete(Long id) {
+        if (findById(id).isEmpty()) {
+            throw new ru.yandex.practicum.filmorate.exception.NotFoundException("Пользователь с id " +
+                    id + " не найден");
+        }
         String query = "delete from users where user_id = ?";
         jdbc.update(query, id);
     }

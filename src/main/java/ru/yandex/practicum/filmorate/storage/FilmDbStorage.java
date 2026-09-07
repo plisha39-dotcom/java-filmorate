@@ -144,8 +144,7 @@ public class FilmDbStorage implements FilmStorage {
         if (findById(id).isEmpty()) {
             throw new NotFoundException("Фильм с id " + id + " не найден");
         }
-        deleteGenresByFilmId(id);
-        deleteLikesByFilmId(id);
+
         String query = "delete from films where film_id = ?";
         jdbc.update(query, id);
     }
@@ -264,5 +263,11 @@ public class FilmDbStorage implements FilmStorage {
             Set<Long> likes = likesByFilmId.getOrDefault(filmId, new HashSet<>());
             film.setLikes(likes);
         }
+    }
+
+    @Override
+    public void removeLikesByUser(Long userId) {
+        String query = "delete from film_likes where user_id = ?";
+        jdbc.update(query, userId);
     }
 }
