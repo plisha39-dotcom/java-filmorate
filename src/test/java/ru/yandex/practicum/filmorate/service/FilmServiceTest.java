@@ -169,7 +169,7 @@ public class FilmServiceTest {
         filmService.addLike(film.getId(), user1.getId());
         filmService.addLike(film1.getId(), user2.getId());
 
-        List<Film> films = filmService.getPopularFilms(2);
+        List<Film> films = filmService.getPopularFilms(2, null, null);
 
         Assertions.assertEquals(2, films.size(), "Список из популярных фильмов должен == 2");
         Assertions.assertEquals(
@@ -230,7 +230,7 @@ public class FilmServiceTest {
     @Test
     void testGetPopularFilmsThrowsValidationExceptionWhenCountIsNegative() {
         Assertions.assertThrows(ValidationException.class,
-                () -> filmService.getPopularFilms(-1),
+                () -> filmService.getPopularFilms(-1, null, null),
                 "При отрицательном количестве фильмов должна выбрасываться ValidationException");
     }
 
