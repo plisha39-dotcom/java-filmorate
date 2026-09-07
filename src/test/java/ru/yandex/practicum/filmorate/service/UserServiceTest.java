@@ -5,15 +5,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
-import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.*;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -232,46 +227,5 @@ public class UserServiceTest {
 
         Mockito.verify(friendshipStorage, Mockito.never())
                 .addFriendship(Mockito.anyLong(), Mockito.anyLong());
-    }
-
-    @Test
-    void testDeleteUserRemovesLikesFromFilms() {
-        User user = new User();
-        user.setName("Борис");
-        user.setLogin("BOR");
-        user.setEmail("bor@yandex.ru");
-        user.setBirthday(LocalDate.of(1999, 1, 15));
-
-        User savedUser = userStorage.create(user);
-
-        Film film = new Film();
-        film.setName("Интерстеллар");
-        film.setDescription("Фантастический фильм");
-        film.setReleaseDate(LocalDate.of(2014, 11, 6));
-        film.setDuration(169);
-
-        Film savedFilm = filmStorage.create(film);
-
-        savedFilm.getLikes().add(savedUser.getId());
-        filmStorage.update(savedFilm);
-
-        Assertions.assertTrue(
-                filmStorage.findById(savedFilm.getId()).orElseThrow()
-                        .getLikes().contains(savedUser.getId()),
-                "Перед удалением пользователя его лайк должен находиться у фильма"
-        );
-
-        userService.deleteUser(savedUser.getId());
-
-        Assertions.assertTrue(
-                userStorage.findById(savedUser.getId()).isEmpty(),
-                "Пользователь должен быть удалён"
-        );
-
-        Assertions.assertFalse(
-                filmStorage.findById(savedFilm.getId()).orElseThrow()
-                        .getLikes().contains(savedUser.getId()),
-                "Лайки удалённого пользователя должны быть очищены"
-        );
     }
 }

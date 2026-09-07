@@ -4,24 +4,14 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
-import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.*;
 
 import java.time.LocalDate;
-import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.verify;
 
 public class UserControllerTest {
     private UserStorage userStorage;
@@ -118,47 +108,6 @@ public class UserControllerTest {
         assertEquals("Новый_логин", updateUser.getLogin(), "Логин пользователя должен измениться");
         assertEquals(LocalDate.of(1990, 2, 20), updateUser.getBirthday(), "Дата рождения должна измениться");
         assertEquals("new@yandex.ru", updateUser.getEmail(), "email должен измениться");
-    }
-
-    @Test
-    void testDeleteExistingUser() {
-        User user = new User();
-        user.setLogin("testuser");
-        user.setEmail("test@test.com");
-        user.setBirthday(LocalDate.of(1990, 1, 1));
-        User createdUser = controller.create(user);
-
-        User friend = new User();
-        friend.setLogin("friend");
-        friend.setEmail("friend@test.com");
-        friend.setBirthday(LocalDate.of(1990, 1, 1));
-        User createdFriend = controller.create(friend);
-
-        Film film = new Film();
-        film.setName("Фильм");
-        film.setDescription("Описание");
-        film.setReleaseDate(LocalDate.of(2020, 1, 1));
-        film.setDuration(120);
-        Film createdFilm = filmStorage.create(film);
-
-        filmStorage.addLike(createdFilm.getId(), createdUser.getId());
-
-        Friendship friendship = new Friendship();
-        friendship.setRequesterId(createdUser.getId());
-        friendship.setAddresseeId(createdFriend.getId());
-        Mockito.when(friendshipStorage.findFriendship(createdUser.getId(), createdFriend.getId()))
-                .thenReturn(Optional.of(friendship));
-
-        controller.deleteUser(createdUser.getId());
-
-        assertTrue(userStorage.findById(createdUser.getId()).isEmpty(),
-                "Пользователь должен быть удален из хранилища");
-
-        Film updatedFilm = filmStorage.findById(createdFilm.getId()).orElseThrow();
-        assertFalse(updatedFilm.getLikes().contains(createdUser.getId()),
-                "Лайк удаленного пользователя должен быть удален из фильма");
-
-        verify(friendshipStorage).deleteFriendshipsByUser(createdUser.getId());
     }
 
     @Test

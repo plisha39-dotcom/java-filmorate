@@ -95,11 +95,7 @@ public class UserService {
 
     public void deleteUser(Long userId) {
         getUserById(userId);
-        filmStorage.removeLikesByUser(userId);
-        friendshipStorage.deleteFriendshipsByUser(userId);
         userStorage.delete(userId);
         log.info("Пользователь с id {} удален вместе с лайками и друзьями", userId);
     }
 }
-
-

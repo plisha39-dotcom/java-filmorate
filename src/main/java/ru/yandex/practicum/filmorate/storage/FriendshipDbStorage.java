@@ -95,9 +95,4 @@ public class FriendshipDbStorage implements FriendshipStorage {
                 userId, userId);
         return new HashSet<>(friendIds);
     }
-
-    public void deleteFriendshipsByUser(Long userId) {
-        String query = "delete from friendship where requester_id = ? or addressee_id = ?";
-        jdbc.update(query, userId, userId);
-    }
 }
