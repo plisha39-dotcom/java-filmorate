@@ -105,8 +105,4 @@ public class InMemoryFilmStorage implements FilmStorage {
     private long getNextId() {
         return ++currentId;
     }
-
-    public void removeLikesByUser(Long userId) {
-        films.values().forEach(film -> film.getLikes().remove(userId));
-    }
 }
