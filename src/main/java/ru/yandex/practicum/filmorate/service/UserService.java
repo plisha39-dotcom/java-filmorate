@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -102,6 +103,53 @@ public class UserService {
             }
         }
         userStorage.delete(userId);
+    }
+
+    public List<Film> getRecommendations(Long userId) {
+        getUserById(userId);
+        Map<Long, Set<Long>> likesByUsers = filmStorage.getLikesFromAllUsers();
+        Set<Long> targetLikes = likesByUsers.getOrDefault(userId, new HashSet<>());
+        if (targetLikes.isEmpty()) {
+            return new ArrayList<>();
+        }
+        int maxIntersection = 0;
+        Collection<Long> similarUserIds = new HashSet<>();
+        for (Map.Entry<Long, Set<Long>> entry : likesByUsers.entrySet()) {
+            Long currentUserId = entry.getKey();
+            Set<Long> currentUserLikes = entry.getValue();
+            if (currentUserId.equals(userId)) {
+                continue;
+            }
+            int intersection = 0;
+            for (Long filmId : targetLikes) {
+                if (currentUserLikes.contains(filmId)) {
+                    intersection++;
+                }
+            }
+            if (intersection == 0) {
+                continue;
+            }
+            if (intersection > maxIntersection) {
+                maxIntersection = intersection;
+                similarUserIds.clear();
+                similarUserIds.add(currentUserId);
+            } else if (intersection == maxIntersection) {
+                similarUserIds.add(currentUserId);
+            }
+        }
+        Set<Long> recommendationIds = new HashSet<>();
+        for (Long similarUserId : similarUserIds) {
+            Set<Long> similarUserLikes = likesByUsers.get(similarUserId);
+            for (Long filmId : similarUserLikes) {
+                if (!targetLikes.contains(filmId)) {
+                    recommendationIds.add(filmId);
+                }
+            }
+        }
+        return filmStorage.findAll()
+                          .stream()
+                          .filter(film -> recommendationIds.contains(film.getId()))
+                          .toList();
     }
 }
 
