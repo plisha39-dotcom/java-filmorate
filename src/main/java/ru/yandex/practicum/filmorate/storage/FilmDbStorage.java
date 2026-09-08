@@ -6,13 +6,16 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -115,6 +118,7 @@ public class FilmDbStorage implements FilmStorage {
             film.setId(id);
             saveGenres(id, film.getGenres());
             saveLikes(id, film.getLikes());
+            saveDirectors(id, film.getDirectors());
             return film;
         } else {
             throw new RuntimeException("Не удалось получить id созданного фильма");
@@ -136,6 +140,8 @@ public class FilmDbStorage implements FilmStorage {
         }
         deleteGenresByFilmId(film.getId());
         saveGenres(film.getId(), film.getGenres());
+        deleteDirectorsByFilmId(film.getId());
+        saveDirectors(film.getId(), film.getDirectors());
         return film;
     }
 
@@ -279,6 +285,84 @@ public class FilmDbStorage implements FilmStorage {
         List<Film> films = jdbc.query(query, rowMapper, genreId, genreId, year, year, count);
 
         populateLikesAndGenres(films);
+
+        return films;
+    }
+
+    private void saveDirectors(Long filmId, Set<Director> directors) {
+        if (directors == null || directors.isEmpty()) return;
+        String query = "INSERT INTO film_directors (film_id, director_id) VALUES (?, ?)";
+        for (Director director : directors) {
+            jdbc.update(query, filmId, director.getId());
+        }
+    }
+
+    private void deleteDirectorsByFilmId(Long filmId) {
+        jdbc.update("DELETE FROM film_directors WHERE film_id = ?", filmId);
+    }
+
+    private Set<Director> findDirectorsByFilmIds(Collection<Long> filmIds) {
+        if (filmIds == null || filmIds.isEmpty()) return new HashSet<>();
+        String placeholder = String.join(",", Collections.nCopies(filmIds.size(), "?"));
+        String query = "SELECT d.director_id, d.name, fd.film_id FROM directors d " +
+                "JOIN film_directors fd ON d.director_id = fd.director_id " +
+                "WHERE fd.film_id IN (" + placeholder + ")";
+
+        Set<Director> directors = new HashSet<>();
+        jdbc.query(query, rs -> {
+            Director director = new Director();
+            director.setId(rs.getInt("director_id"));
+            director.setName(rs.getString("name"));
+            directors.add(director);
+        }, filmIds.toArray());
+        return directors;
+    }
+
+    @Override
+    public List<Film> searchFilms(String query, String by) {
+        boolean searchByTitle = by.contains("title");
+        boolean searchByDirector = by.contains("director");
+
+        StringBuilder sql = new StringBuilder("""
+            SELECT f.film_id, f.name AS film_name, f.description, f.duration, f.release_date,
+                   m.mpa_id, m.name AS mpa_name
+            FROM films f
+            LEFT JOIN mpa m ON f.mpa_id = m.mpa_id
+            LEFT JOIN film_directors fd ON f.film_id = fd.film_id
+            LEFT JOIN directors d ON fd.director_id = d.director_id
+            LEFT JOIN film_likes fl ON f.film_id = fl.film_id
+            WHERE 1=1
+        """);
+
+        List<Object> params = new ArrayList<>();
+
+        if (searchByTitle && searchByDirector) {
+            sql.append(" AND (LOWER(f.name) LIKE LOWER(CONCAT('%', ?, '%')) OR LOWER(d.name) LIKE LOWER(CONCAT('%', ?, '%'))) ");
+            params.add(query);
+            params.add(query);
+        } else if (searchByTitle) {
+            sql.append(" AND LOWER(f.name) LIKE LOWER(CONCAT('%', ?, '%')) ");
+            params.add(query);
+        } else if (searchByDirector) {
+            sql.append(" AND LOWER(d.name) LIKE LOWER(CONCAT('%', ?, '%')) ");
+            params.add(query);
+        }
+
+        sql.append("""
+            GROUP BY f.film_id, f.name, f.description, f.duration, f.release_date, m.mpa_id, m.name
+            ORDER BY COUNT(DISTINCT fl.user_id) DESC
+        """);
+
+        List<Film> films = jdbc.query(sql.toString(), rowMapper, params.toArray());
+        populateLikesAndGenres(films);
+
+        if (!films.isEmpty()) {
+            List<Long> filmIds = films.stream().map(Film::getId).toList();
+            for (Film film : films) {
+                Set<Director> directors = findDirectorsByFilmIds(List.of(film.getId()));
+                film.setDirectors(directors);
+            }
+        }
 
         return films;
     }

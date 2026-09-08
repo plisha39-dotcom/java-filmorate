@@ -7,6 +7,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
@@ -15,16 +16,18 @@ import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 @JdbcTest
 @AutoConfigureTestDatabase
-@Import({FilmDbStorage.class, UserDbStorage.class})
+@Import({FilmDbStorage.class, UserDbStorage.class, DirectorDbStorage.class})
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class FilmDbStorageTest {
     private final FilmDbStorage filmStorage;
     private final UserDbStorage userStorage;
+    private final DirectorDbStorage directorStorage;
 
     @Autowired
     private JdbcTemplate jdbc;
@@ -490,5 +493,83 @@ public class FilmDbStorageTest {
 
         assertThat(likesAfter).isZero();
         assertThat(genresAfter).isZero();
+    }
+
+    private Film createFilm(String name, Director director) {
+        Film film = new Film();
+        film.setName(name);
+        film.setDescription("Описание");
+        film.setReleaseDate(LocalDate.of(2010, 1, 1));
+        film.setDuration(120);
+        if (director != null) {
+            film.setDirectors(Set.of(director));
+        }
+        return filmStorage.create(film);
+    }
+
+    private User createUser(String login) {
+        User user = new User();
+        user.setName("Имя");
+        user.setLogin(login);
+        user.setEmail(login + "@yandex.ru");
+        user.setBirthday(LocalDate.of(1990, 1, 1));
+        return userStorage.create(user);
+    }
+
+    @Test
+    void testSearchFilmsByTitle() {
+        createFilm("Начало", null);
+        createFilm("Интерстеллар", null);
+
+        List<Film> result = filmStorage.searchFilms("нач", "title");
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getName()).isEqualTo("Начало");
+    }
+
+    @Test
+    void testSearchFilmsByDirector() {
+        Director director = new Director();
+        director.setName("Кристофер Нолан");
+        directorStorage.create(director);
+
+        createFilm("Фильм 1", director);
+        createFilm("Фильм 2", null);
+
+        List<Film> result = filmStorage.searchFilms("нол", "director");
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getName()).isEqualTo("Фильм 1");
+    }
+
+    @Test
+    void testSearchFilmsByTitleAndDirectorSortedByPopularity() {
+        Director director = new Director();
+        director.setName("Нолан");
+        directorStorage.create(director);
+
+        User user1 = createUser("user1");
+        User user2 = createUser("user2");
+        User user3 = createUser("user3");
+
+        Film film1 = createFilm("Начало", director);
+        filmStorage.addLike(film1.getId(), user1.getId());
+        filmStorage.addLike(film1.getId(), user2.getId());
+
+        Film film2 = createFilm("Интерстеллар", director);
+        filmStorage.addLike(film2.getId(), user1.getId());
+        filmStorage.addLike(film2.getId(), user2.getId());
+        filmStorage.addLike(film2.getId(), user3.getId());
+
+        Film film3 = createFilm("Ночной дозор", null);
+        filmStorage.addLike(film3.getId(), user1.getId());
+
+        List<Film> result = filmStorage.searchFilms("н", "title,director");
+
+        assertThat(result).hasSize(3);
+
+        assertThat(result)
+                .extracting(Film::getName)
+                .containsExactly("Интерстеллар", "Начало", "Ночной дозор");
     }
 }

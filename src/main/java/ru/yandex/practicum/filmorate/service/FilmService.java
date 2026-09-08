@@ -66,4 +66,20 @@ public class FilmService {
         filmStorage.delete(filmId);
         log.info("Фильм с id {} успешно удален", filmId);
     }
+
+    public List<Film> searchFilms(String query, String by) {
+        if (query == null || query.isBlank()) {
+            throw new ValidationException("Параметр 'query' не может быть пустым");
+        }
+
+        String normalizedBy = by.toLowerCase().replaceAll("\\s+", "");
+        if (!normalizedBy.equals("title") &&
+                !normalizedBy.equals("director") &&
+                !normalizedBy.equals("title,director") &&
+                !normalizedBy.equals("director,title")) {
+            throw new ValidationException("Параметр 'by' должен быть 'title', 'director' или 'title,director'");
+        }
+
+        return filmStorage.searchFilms(query, normalizedBy);
+    }
 }
