@@ -64,4 +64,28 @@ class DirectorDbStorageTest {
                 .extracting(Director::getId)
                 .containsExactlyInAnyOrder(d1.getId(), d2.getId());
     }
+
+    @Test
+    void testUpdateDirector() {
+        Director director = new Director();
+        director.setName("Старое имя");
+        directorStorage.create(director);
+
+        director.setName("Новое имя");
+        Director updated = directorStorage.update(director);
+
+        assertThat(updated.getName()).isEqualTo("Новое имя");
+        assertThat(directorStorage.findById(director.getId()).get().getName()).isEqualTo("Новое имя");
+    }
+
+    @Test
+    void testDeleteDirector() {
+        Director director = new Director();
+        director.setName("Квентин Тарантино");
+        directorStorage.create(director);
+
+        directorStorage.delete(director.getId());
+
+        assertThat(directorStorage.findById(director.getId())).isEmpty();
+    }
 }

@@ -11,4 +11,8 @@ public interface DirectorStorage {
     Optional<Director> findById(Integer id);
 
     Director create(Director director);
+
+    Director update(Director director);
+
+    void delete(Integer id);
 }

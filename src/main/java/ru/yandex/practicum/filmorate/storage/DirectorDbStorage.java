@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
 
 import java.sql.PreparedStatement;
@@ -52,5 +53,24 @@ public class DirectorDbStorage implements DirectorStorage {
         }, keyHolder);
         director.setId(keyHolder.getKeyAs(Integer.class));
         return director;
+    }
+
+    @Override
+    public Director update(Director director) {
+        String query = "UPDATE directors SET name = ? WHERE director_id = ?";
+        int rows = jdbc.update(query, director.getName(), director.getId());
+        if (rows == 0) {
+            throw new NotFoundException("Режиссер с id " + director.getId() + " не найден");
+        }
+        return director;
+    }
+
+    @Override
+    public void delete(Integer id) {
+        String query = "DELETE FROM directors WHERE director_id = ?";
+        int rows = jdbc.update(query, id);
+        if (rows == 0) {
+            throw new NotFoundException("Режиссер с id " + id + " не найден");
+        }
     }
 }

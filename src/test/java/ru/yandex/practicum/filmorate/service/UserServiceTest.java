@@ -8,13 +8,19 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.*;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class UserServiceTest {
     private UserStorage userStorage;
@@ -219,7 +225,7 @@ public class UserServiceTest {
 
         userStorage.create(user);
 
-        Assertions.assertThrows(
+        assertThrows(
                 NotFoundException.class,
                 () -> userService.addFriend(user.getId(), 999L),
                 "При добавлении несуществующего друга должно выбрасываться NotFoundException"
@@ -227,5 +233,20 @@ public class UserServiceTest {
 
         Mockito.verify(friendshipStorage, Mockito.never())
                 .addFriendship(Mockito.anyLong(), Mockito.anyLong());
+    }
+
+    @Test
+    void testDeleteUserSuccess() {
+        User user = new User();
+        user.setName("Борис");
+        user.setLogin("BOR");
+        user.setEmail("bor@yandex.ru");
+        user.setBirthday(LocalDate.of(1999, 1, 15));
+        userStorage.create(user);
+
+        userService.deleteUser(user.getId());
+
+        assertThrows(NotFoundException.class, () -> userService.getFriends(user.getId()),
+                "Удаленный пользователь не должен находиться");
     }
 }
