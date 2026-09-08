@@ -21,18 +21,22 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import static org.mockito.Mockito.mock;
+
 public class UserServiceTest {
     private UserStorage userStorage;
     private UserService userService;
     private FilmStorage filmStorage;
     private FriendshipStorage friendshipStorage;
+    private EventService eventService;
 
     @BeforeEach
     void setUp() {
         userStorage = new InMemoryUserStorage();
         filmStorage = new InMemoryFilmStorage();
         friendshipStorage = Mockito.mock(FriendshipStorage.class);
-        userService = new UserService(userStorage, filmStorage, friendshipStorage);
+        eventService = mock(EventService.class);
+        userService = new UserService(userStorage, filmStorage, friendshipStorage,eventService);
     }
 
     @Test

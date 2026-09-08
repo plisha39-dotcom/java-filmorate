@@ -15,16 +15,20 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.time.LocalDate;
 import java.util.List;
 
+import static org.mockito.Mockito.mock;
+
 public class FilmServiceTest {
     private FilmStorage filmStorage;
     private UserStorage userStorage;
     private FilmService filmService;
+    private EventService eventService;
 
     @BeforeEach
     void setUp() {
         userStorage = new InMemoryUserStorage();
         filmStorage = new InMemoryFilmStorage();
-        filmService = new FilmService(userStorage, filmStorage);
+        eventService = mock(EventService.class);
+        filmService = new FilmService(userStorage, filmStorage,eventService);
 
     }
 

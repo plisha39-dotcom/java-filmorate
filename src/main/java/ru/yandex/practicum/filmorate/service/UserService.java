@@ -4,9 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Friendship;
-import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -24,13 +23,16 @@ public class UserService {
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
     private final FriendshipStorage friendshipStorage;
+    private final EventService eventService;
 
     public UserService(@Qualifier("userDbStorage") UserStorage userStorage,
                        @Qualifier("filmDbStorage") FilmStorage filmStorage,
-                       FriendshipStorage friendshipStorage) {
+                       FriendshipStorage friendshipStorage,
+                       EventService eventService) {
         this.userStorage = userStorage;
         this.filmStorage = filmStorage;
         this.friendshipStorage = friendshipStorage;
+        this.eventService = eventService;
     }
 
     public void addFriend(Long userId, Long friendId) {
@@ -44,6 +46,7 @@ public class UserService {
         } else {
             friendshipStorage.addFriendship(userId, friendId);
         }
+        eventService.createEvent(userId, EventType.FRIEND, Operation.ADD, friendId);
         log.info("Пользователь userId={} добавил в друзья friendId={}", user.getId(), friend.getId());
     }
 
@@ -51,6 +54,7 @@ public class UserService {
         User user = getUserById(userId);
         User friend = getUserById(friendId);
         friendshipStorage.deleteFriendship(userId, friendId);
+        eventService.createEvent(userId, EventType.FRIEND, Operation.REMOVE, friendId);
         log.info("Пользователь userId={} удалил из друзей friendId={}", user.getId(), friend.getId());
     }
 

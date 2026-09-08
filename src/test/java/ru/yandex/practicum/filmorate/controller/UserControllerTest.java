@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.UserService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
@@ -14,6 +15,7 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
 
 public class UserControllerTest {
     private UserStorage userStorage;
@@ -21,14 +23,16 @@ public class UserControllerTest {
     private UserService userService;
     private FilmStorage filmStorage;
     private FriendshipStorage friendshipStorage;
+    private EventService eventService;
 
     @BeforeEach
     void setUp() {
+        eventService = mock(EventService.class);
         userStorage = new InMemoryUserStorage();
         filmStorage = new InMemoryFilmStorage();
         friendshipStorage = Mockito.mock(FriendshipStorage.class);
-        userService = new UserService(userStorage, filmStorage, friendshipStorage);
-        controller = new UserController(userStorage, userService);
+        userService = new UserService(userStorage, filmStorage, friendshipStorage, eventService);
+        controller = new UserController(userStorage, userService, eventService);
     }
 
     @Test

@@ -5,7 +5,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -16,16 +18,21 @@ import java.util.List;
 public class FilmService {
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
+    private final EventService eventService;
 
-    public FilmService(@Qualifier("userDbStorage") UserStorage userStorage, @Qualifier("filmDbStorage") FilmStorage filmStorage) {
+    public FilmService(@Qualifier("userDbStorage") UserStorage userStorage,
+                       @Qualifier("filmDbStorage") FilmStorage filmStorage,
+                       EventService eventService) {
         this.userStorage = userStorage;
         this.filmStorage = filmStorage;
+        this.eventService = eventService;
     }
 
     public void addLike(Long filmId, Long userId) {
         checkUserExists(userId);
         Film film = getFilmById(filmId);
         filmStorage.addLike(filmId, userId);
+        eventService.createEvent(userId, EventType.LIKE, Operation.ADD, filmId);
         log.info("Пользователь userId={} поставил лайк фильму filmId={}", userId, film.getId());
     }
 
@@ -33,6 +40,7 @@ public class FilmService {
         checkUserExists(userId);
         Film film = getFilmById(filmId);
         filmStorage.removeLike(filmId, userId);
+        eventService.createEvent(userId, EventType.LIKE, Operation.REMOVE, filmId);
         log.info("Пользователь userId={} удалил лайк фильму filmId={}", userId, film.getId());
     }
 

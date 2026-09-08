@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
@@ -23,12 +24,14 @@ public class FilmControllerTest {
     private FilmController controller;
     private final MpaStorage mpaStorage = mock(MpaStorage.class);
     private final GenreStorage genreStorage = mock(GenreStorage.class);
+    private EventService eventService;
 
     @BeforeEach
     void setUp() {
+        eventService = mock(EventService.class);
         filmStorage = new InMemoryFilmStorage();
         userStorage = new InMemoryUserStorage();
-        filmService = new FilmService(userStorage, filmStorage);
+        filmService = new FilmService(userStorage, filmStorage, eventService);
         controller = new FilmController(filmStorage, filmService, mpaStorage, genreStorage);
     }
 
