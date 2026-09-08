@@ -82,4 +82,11 @@ public class FilmService {
 
         return filmStorage.searchFilms(query, normalizedBy);
     }
+
+    public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
+        if (!sortBy.equals("year") && !sortBy.equals("likes")) {
+            throw new ValidationException("Параметр sortBy должен быть 'year' или 'likes'");
+        }
+        return filmStorage.getFilmsByDirector(directorId, sortBy);
+    }
 }
