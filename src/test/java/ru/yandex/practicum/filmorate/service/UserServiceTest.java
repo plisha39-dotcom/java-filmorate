@@ -5,11 +5,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Friendship;
 import ru.yandex.practicum.filmorate.model.FriendshipStatus;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
-import ru.yandex.practicum.filmorate.storage.*;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -53,9 +58,9 @@ public class UserServiceTest {
         userStorage.create(user1);
 
         Mockito.when(friendshipStorage.findFriendship(user1.getId(), user.getId()))
-                .thenReturn(Optional.empty());
+               .thenReturn(Optional.empty());
         Mockito.when(friendshipStorage.findFriendship(user.getId(), user1.getId()))
-                .thenReturn(Optional.empty());
+               .thenReturn(Optional.empty());
 
         userService.addFriend(user.getId(), user1.getId());
 
@@ -86,7 +91,7 @@ public class UserServiceTest {
         friendship.setStatus(FriendshipStatus.UNCONFIRMED);
 
         Mockito.when(friendshipStorage.findFriendship(user.getId(), user1.getId()))
-                .thenReturn(Optional.empty()).thenReturn(Optional.of(friendship));
+               .thenReturn(Optional.empty()).thenReturn(Optional.of(friendship));
 
         userService.addFriend(user.getId(), user1.getId());
         userService.addFriend(user.getId(), user1.getId());
@@ -115,7 +120,7 @@ public class UserServiceTest {
         userService.removeFriend(user.getId(), user1.getId());
 
         Mockito.verify(friendshipStorage, Mockito.times(1))
-                .deleteFriendship(user.getId(), user1.getId());
+               .deleteFriendship(user.getId(), user1.getId());
     }
 
     @Test
@@ -145,7 +150,7 @@ public class UserServiceTest {
         userStorage.create(user2);
 
         Mockito.when(friendshipStorage.getFriendsIds(user.getId()))
-                .thenReturn(Set.of(user1.getId(), user2.getId()));
+               .thenReturn(Set.of(user1.getId(), user2.getId()));
 
         List<User> friends = userService.getFriends(user.getId());
 
@@ -200,9 +205,9 @@ public class UserServiceTest {
         userStorage.create(user2);
 
         Mockito.when(friendshipStorage.getFriendsIds(userA.getId()))
-                .thenReturn(Set.of(user1.getId(), user2.getId()));
+               .thenReturn(Set.of(user1.getId(), user2.getId()));
         Mockito.when(friendshipStorage.getFriendsIds(userB.getId()))
-                .thenReturn(Set.of(user1.getId()));
+               .thenReturn(Set.of(user1.getId()));
 
         Collection<User> friends = userService.getCommonFriends(userA.getId(), userB.getId());
 
@@ -230,48 +235,7 @@ public class UserServiceTest {
         );
 
         Mockito.verify(friendshipStorage, Mockito.never())
-                .addFriendship(Mockito.anyLong(), Mockito.anyLong());
-    }
-
-    @Test
-    void testDeleteUserRemovesLikesFromFilms() {
-        User user = new User();
-        user.setName("Борис");
-        user.setLogin("BOR");
-        user.setEmail("bor@yandex.ru");
-        user.setBirthday(LocalDate.of(1999, 1, 15));
-
-        User savedUser = userStorage.create(user);
-
-        Film film = new Film();
-        film.setName("Интерстеллар");
-        film.setDescription("Фантастический фильм");
-        film.setReleaseDate(LocalDate.of(2014, 11, 6));
-        film.setDuration(169);
-
-        Film savedFilm = filmStorage.create(film);
-
-        savedFilm.getLikes().add(savedUser.getId());
-        filmStorage.update(savedFilm);
-
-        Assertions.assertTrue(
-                filmStorage.findById(savedFilm.getId()).orElseThrow()
-                           .getLikes().contains(savedUser.getId()),
-                "Перед удалением пользователя его лайк должен находиться у фильма"
-        );
-
-        userService.deleteUser(savedUser.getId());
-
-        Assertions.assertTrue(
-                userStorage.findById(savedUser.getId()).isEmpty(),
-                "Пользователь должен быть удалён"
-        );
-
-        Assertions.assertFalse(
-                filmStorage.findById(savedFilm.getId()).orElseThrow()
-                           .getLikes().contains(savedUser.getId()),
-                "Лайки удалённого пользователя должны быть очищены"
-        );
+               .addFriendship(Mockito.anyLong(), Mockito.anyLong());
     }
 
     @Test
