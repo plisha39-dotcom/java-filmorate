@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
@@ -24,6 +25,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class FilmDbStorageTest {
     private final FilmDbStorage filmStorage;
     private final UserDbStorage userStorage;
+
+    @Autowired
+    private JdbcTemplate jdbc;
 
     @Test
     void testCreateFilm() {
@@ -136,10 +140,10 @@ public class FilmDbStorageTest {
                 .isPresent()
                 .hasValueSatisfying(foundFilm -> {
                     assertThat(foundFilm).hasFieldOrPropertyWithValue("id", updateFilm.getId())
-                                         .hasFieldOrPropertyWithValue("name", updateFilm.getName())
-                                         .hasFieldOrPropertyWithValue("description", updateFilm.getDescription())
-                                         .hasFieldOrPropertyWithValue("releaseDate", updateFilm.getReleaseDate())
-                                         .hasFieldOrPropertyWithValue("duration", updateFilm.getDuration());
+                            .hasFieldOrPropertyWithValue("name", updateFilm.getName())
+                            .hasFieldOrPropertyWithValue("description", updateFilm.getDescription())
+                            .hasFieldOrPropertyWithValue("releaseDate", updateFilm.getReleaseDate())
+                            .hasFieldOrPropertyWithValue("duration", updateFilm.getDuration());
                     assertThat(foundFilm.getMpa().getId())
                             .isEqualTo(updateFilm.getMpa().getId());
                 });
@@ -442,5 +446,49 @@ public class FilmDbStorageTest {
         assertThat(films)
                 .extracting(Film::getId)
                 .containsExactly(film1.getId(), film.getId());
+    }
+
+    @Test
+    void testDeleteFilmCascadesInDb() {
+
+        Film film = new Film();
+        film.setName("Интерстеллар");
+        film.setDescription("Фантастический фильм");
+        film.setReleaseDate(LocalDate.of(2014, 11, 6));
+        film.setDuration(169);
+        Mpa mpa = new Mpa();
+        mpa.setId(1);
+        film.setMpa(mpa);
+        filmStorage.create(film);
+        Long filmId = film.getId();
+
+        User user = new User();
+        user.setName("Борис");
+        user.setLogin("BOR");
+        user.setEmail("bor@yandex.ru");
+        user.setBirthday(LocalDate.of(1999, 1, 15));
+        userStorage.create(user);
+
+        filmStorage.addLike(filmId, user.getId());
+        jdbc.update("insert into film_genres (film_id, genre_id) values (?, ?)", filmId, 1);
+
+        Integer likesBefore = jdbc.queryForObject("select count(*) from film_likes where film_id = ?",
+                Integer.class, filmId);
+        Integer genresBefore = jdbc.queryForObject("select count(*) from film_genres where film_id = ?",
+                Integer.class, filmId);
+        assertThat(likesBefore).isEqualTo(1);
+        assertThat(genresBefore).isEqualTo(1);
+
+        filmStorage.delete(filmId);
+
+        assertThat(filmStorage.findById(filmId)).isEmpty();
+
+        Integer likesAfter = jdbc.queryForObject("select count(*) from film_likes where film_id = ?",
+                Integer.class, filmId);
+        Integer genresAfter = jdbc.queryForObject("select count(*) from film_genres where film_id = ?",
+                Integer.class, filmId);
+
+        assertThat(likesAfter).isZero();
+        assertThat(genresAfter).isZero();
     }
 }

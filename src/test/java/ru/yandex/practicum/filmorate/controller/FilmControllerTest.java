@@ -2,7 +2,10 @@ package ru.yandex.practicum.filmorate.controller;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
@@ -12,8 +15,14 @@ import ru.yandex.practicum.filmorate.storage.MpaStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 
 public class FilmControllerTest {
@@ -109,5 +118,45 @@ public class FilmControllerTest {
         assertEquals("Новое описание", updateFilm.getDescription(), "Описание фильма должно измениться");
         assertEquals(LocalDate.of(2010, 1, 8), updateFilm.getReleaseDate(), "Дата релиза должна измениться");
         assertEquals(120, updateFilm.getDuration(), "Продолжительность должна измениться");
+    }
+
+    @Test
+    void testDeleteExistingFilm() {
+        Genre mockGenre = new Genre();
+        mockGenre.setId(1);
+        mockGenre.setName("Комедия");
+        Mockito.when(genreStorage.findById(1)).thenReturn(Optional.of(mockGenre));
+
+        Film film = new Film();
+        film.setName("Тестовый фильм");
+        film.setDescription("Описание");
+        film.setReleaseDate(LocalDate.of(2020, 1, 1));
+        film.setDuration(120);
+
+        film.setLikes(new HashSet<>(Set.of(1L, 2L)));
+        film.setGenres(new HashSet<>(Set.of(mockGenre)));
+
+        Film createdFilm = controller.create(film);
+        Long filmId = createdFilm.getId();
+
+        controller.deleteFilm(filmId);
+
+        assertTrue(filmStorage.findById(filmId).isEmpty(),
+                "Фильм должен быть удален из хранилища");
+
+        boolean hasOrphanLikes = filmStorage.findAll().stream()
+                .anyMatch(f -> f.getLikes().contains(1L));
+        assertFalse(hasOrphanLikes, "Связанные лайки должны быть удалены вместе с фильмом");
+
+        boolean hasOrphanGenres = filmStorage.findAll().stream()
+                .anyMatch(f -> f.getGenres().stream().anyMatch(g -> g.getId() == 1));
+        assertFalse(hasOrphanGenres, "Связанные жанры должны быть удалены вместе с фильмом");
+    }
+
+    @Test
+    void testDeleteNonExistentFilmThrowsException() {
+        assertThrows(NotFoundException.class,
+                () -> controller.deleteFilm(999L),
+                "Удаление несуществующего фильма должно выбрасывать NotFoundException");
     }
 }
