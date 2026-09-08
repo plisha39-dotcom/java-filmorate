@@ -56,6 +56,7 @@ public class InMemoryFilmStorageTest {
                 actualFilm.getName(),
                 "Название фильма должно обновиться"
         );
+
         Assertions.assertTrue(
                 actualFilm.getLikes().contains(user.getId()),
                 "После обновления должен сохраниться ID пользователя, поставившего лайк"
