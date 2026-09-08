@@ -100,4 +100,9 @@ public class UserController {
             log.debug("Имя пользователя отсутствует, используется логин");
         }
     }
+
+    @DeleteMapping("/{id}")
+    public void deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+    }
 }

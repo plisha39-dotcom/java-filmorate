@@ -83,7 +83,7 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public List<Film> getCommonFilms(Long userId, Long friendId) {
-        List<Film> films = findAll()
+        return findAll()
                 .stream()
                 .filter(film -> film.getLikes().contains(userId) && film.getLikes().contains(friendId))
                 .sorted((film1, film2) -> Integer.compare(
@@ -91,7 +91,6 @@ public class InMemoryFilmStorage implements FilmStorage {
                         film1.getLikes().size()
                 ))
                 .toList();
-        return films;
     }
 
     @Override

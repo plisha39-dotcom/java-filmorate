@@ -141,8 +141,6 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public void delete(Long id) {
-        deleteGenresByFilmId(id);
-        deleteLikesByFilmId(id);
         String query = "delete from films where film_id = ?";
         jdbc.update(query, id);
     }
@@ -263,7 +261,6 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
-    @Override
     public List<Film> getPopularFilms(int count, Integer genreId, Integer year) {
         String query = """
                 SELECT f.film_id, f.name AS film_name, f.description, f.duration, f.release_date,
