@@ -67,4 +67,10 @@ public class FilmService {
         userStorage.findById(userId)
                    .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
     }
+
+    public void deleteFilm(Long filmId) {
+        getFilmById(filmId);
+        filmStorage.delete(filmId);
+        log.info("Фильм с id {} успешно удален", filmId);
+    }
 }

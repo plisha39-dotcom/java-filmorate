@@ -4,8 +4,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.*;
-import ru.yandex.practicum.filmorate.storage.EventStorage;
+import ru.yandex.practicum.filmorate.model.Friendship;
+import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -21,16 +23,13 @@ import java.util.Set;
 @Service
 public class UserService {
     private final UserStorage userStorage;
-    private final FilmStorage filmStorage;
     private final FriendshipStorage friendshipStorage;
     private final EventService eventService;
 
     public UserService(@Qualifier("userDbStorage") UserStorage userStorage,
-                       @Qualifier("filmDbStorage") FilmStorage filmStorage,
                        FriendshipStorage friendshipStorage,
                        EventService eventService) {
         this.userStorage = userStorage;
-        this.filmStorage = filmStorage;
         this.friendshipStorage = friendshipStorage;
         this.eventService = eventService;
     }
@@ -79,7 +78,7 @@ public class UserService {
 
     private User getUserById(Long userId) {
         return userStorage.findById(userId)
-                          .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
+                .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
     }
 
     public List<User> getFriends(Long userId) {
@@ -100,13 +99,7 @@ public class UserService {
 
     public void deleteUser(Long userId) {
         getUserById(userId);
-        for (Film film : filmStorage.findAll()) {
-            if (film.getLikes().contains(userId)) {
-                filmStorage.removeLike(film.getId(), userId);
-            }
-        }
         userStorage.delete(userId);
+        log.info("Пользователь с id {} удален вместе с лайками и друзьями", userId);
     }
 }
-
-

@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.UserService;
@@ -15,13 +16,13 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 
 public class UserControllerTest {
     private UserStorage userStorage;
     private UserController controller;
     private UserService userService;
-    private FilmStorage filmStorage;
     private FriendshipStorage friendshipStorage;
     private EventService eventService;
 
@@ -29,9 +30,8 @@ public class UserControllerTest {
     void setUp() {
         eventService = mock(EventService.class);
         userStorage = new InMemoryUserStorage();
-        filmStorage = new InMemoryFilmStorage();
         friendshipStorage = Mockito.mock(FriendshipStorage.class);
-        userService = new UserService(userStorage, filmStorage, friendshipStorage, eventService);
+        userService = new UserService(userStorage, friendshipStorage, eventService);
         controller = new UserController(userStorage, userService, eventService);
     }
 
@@ -114,5 +114,12 @@ public class UserControllerTest {
         assertEquals("Новый_логин", updateUser.getLogin(), "Логин пользователя должен измениться");
         assertEquals(LocalDate.of(1990, 2, 20), updateUser.getBirthday(), "Дата рождения должна измениться");
         assertEquals("new@yandex.ru", updateUser.getEmail(), "email должен измениться");
+    }
+
+    @Test
+    void testDeleteNonExistentUserThrowsException() {
+        assertThrows(NotFoundException.class,
+                () -> controller.deleteUser(999L),
+                "Удаление несуществующего пользователя должно выбрасывать NotFoundException");
     }
 }
