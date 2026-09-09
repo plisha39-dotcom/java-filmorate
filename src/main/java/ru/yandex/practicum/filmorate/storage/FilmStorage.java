@@ -30,4 +30,8 @@ public interface FilmStorage {
     List<Film> searchFilms(String query, String by);
 
     List<Film> getFilmsByDirector(Integer directorId, String sortBy);
+
+    Map<Long, Set<Long>> getLikesFromAllUsers();
+
+    List<Film> getFilmsByIds(Collection<Long> filmIds);
 }

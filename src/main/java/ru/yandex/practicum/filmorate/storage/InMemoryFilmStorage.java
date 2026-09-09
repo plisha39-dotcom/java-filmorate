@@ -97,11 +97,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public List<Film> getPopularFilms(int count, Integer genreId, Integer year) {
         return films.values().stream()
-                    .filter(film -> genreId == null || film.getGenres().stream().anyMatch(g -> g.getId() == genreId))
-                    .filter(film -> year == null || film.getReleaseDate().getYear() == year)
-                    .sorted((film1, film2) -> Integer.compare(film2.getLikes().size(), film1.getLikes().size()))
-                    .limit(count)
-                    .toList();
+                .filter(film -> genreId == null || film.getGenres().stream().anyMatch(g -> g.getId() == genreId))
+                .filter(film -> year == null || film.getReleaseDate().getYear() == year)
+                .sorted((film1, film2) -> Integer.compare(film2.getLikes().size(), film1.getLikes().size()))
+                .limit(count)
+                .toList();
     }
 
     @Override
@@ -123,9 +123,9 @@ public class InMemoryFilmStorage implements FilmStorage {
             return new ArrayList<>();
         }
         return films.values()
-                    .stream()
-                    .filter(film -> filmIds.contains(film.getId()))
-                    .toList();
+                .stream()
+                .filter(film -> filmIds.contains(film.getId()))
+                .toList();
     }
 
     private long getNextId() {

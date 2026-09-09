@@ -412,4 +412,40 @@ public class FilmDbStorage implements FilmStorage {
 
         return films;
     }
+
+    @Override
+    public Map<Long, Set<Long>> getLikesFromAllUsers() {
+        Map<Long, Set<Long>> allLikes = new HashMap<>();
+        String query = "select film_id, user_id from film_likes";
+        jdbc.query(query, rs -> {
+            Long filmId = rs.getLong("film_id");
+            Long userId = rs.getLong("user_id");
+            allLikes.computeIfAbsent(userId, id -> new HashSet<>())
+                    .add(filmId);
+        });
+        return allLikes;
+    }
+
+    @Override
+    public List<Film> getFilmsByIds(Collection<Long> filmIds) {
+        if (filmIds == null || filmIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+        String placeholders = String.join(",", Collections.nCopies(filmIds.size(), "?"));
+        String query = """
+                SELECT f.film_id,
+                       f.name AS film_name,
+                       f.description,
+                       f.duration,
+                       f.release_date,
+                       m.mpa_id,
+                       m.name AS mpa_name
+                FROM films f
+                LEFT JOIN mpa m ON f.mpa_id = m.mpa_id
+                WHERE f.film_id IN (%s)
+                """.formatted(placeholders);
+        List<Film> films = jdbc.query(query, rowMapper, filmIds.toArray());
+        populateLikesAndGenres(films);
+        return films;
+    }
 }
