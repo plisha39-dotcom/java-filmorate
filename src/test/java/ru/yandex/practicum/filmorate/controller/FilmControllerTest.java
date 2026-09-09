@@ -35,13 +35,12 @@ public class FilmControllerTest {
     private final GenreStorage genreStorage = mock(GenreStorage.class);
     private final DirectorStorage directorStorage = mock(DirectorStorage.class);
 
-
     @BeforeEach
     void setUp() {
         filmStorage = new InMemoryFilmStorage();
         userStorage = new InMemoryUserStorage();
         filmService = new FilmService(userStorage, filmStorage, directorStorage);
-        controller = new FilmController(filmStorage, filmService, mpaStorage, genreStorage);
+        controller = new FilmController(filmStorage, filmService, mpaStorage, genreStorage, directorStorage);
     }
 
     @Test

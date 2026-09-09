@@ -15,10 +15,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.MpaStorage;
@@ -36,13 +38,19 @@ public class FilmController {
     private final FilmService filmService;
     private final MpaStorage mpaStorage;
     private final GenreStorage genreStorage;
+    private final DirectorStorage directorStorage;
 
     @Autowired
-    public FilmController(@Qualifier("filmDbStorage") FilmStorage filmStorage, FilmService filmService, MpaStorage mpaStorage, GenreStorage genreStorage) {
+    public FilmController(@Qualifier("filmDbStorage") FilmStorage filmStorage,
+                          FilmService filmService,
+                          MpaStorage mpaStorage,
+                          GenreStorage genreStorage,
+                          DirectorStorage directorStorage) {
         this.filmStorage = filmStorage;
         this.filmService = filmService;
         this.mpaStorage = mpaStorage;
         this.genreStorage = genreStorage;
+        this.directorStorage = directorStorage;
     }
 
     @GetMapping
@@ -76,6 +84,7 @@ public class FilmController {
         validateReleaseDate(film);
         checkMpaExists(film);
         checkGenresExists(film);
+        checkDirectorsExists(film);
         return filmStorage.create(film);
     }
 
@@ -92,6 +101,7 @@ public class FilmController {
         validateReleaseDate(newFilm);
         checkMpaExists(newFilm);
         checkGenresExists(newFilm);
+        checkDirectorsExists(newFilm);
         return filmStorage.update(newFilm);
     }
 
@@ -156,5 +166,17 @@ public class FilmController {
             @RequestParam String sortBy) {
         log.info("Получение списка фильмов режиссера с id: {}, сортировка: {}", directorId, sortBy);
         return filmService.getFilmsByDirector(directorId, sortBy);
+    }
+
+    private void checkDirectorsExists(Film film) {
+        Set<Director> directors = film.getDirectors();
+        if (directors == null || directors.isEmpty()) {
+            return;
+        }
+        for (Director director : directors) {
+            if (directorStorage.findById(director.getId()).isEmpty()) {
+                throw new NotFoundException("Режиссер с id " + director.getId() + " не найден");
+            }
+        }
     }
 }

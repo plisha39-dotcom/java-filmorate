@@ -86,6 +86,7 @@ public class FilmDbStorage implements FilmStorage {
             Film film = jdbc.queryForObject(query, rowMapper, id);
             film.setGenres(findGenresByFilmIds(List.of(id)).getOrDefault(id, new HashSet<>()));
             film.setLikes(findLikesByFilmIds(List.of(id)).getOrDefault(id, new HashSet<>()));
+            film.setDirectors(findDirectorsByFilmIds(List.of(id)).getOrDefault(id, new HashSet<>()));
             return Optional.ofNullable(film);
         } catch (EmptyResultDataAccessException e) {
             return Optional.empty();
@@ -258,12 +259,15 @@ public class FilmDbStorage implements FilmStorage {
         List<Long> filmIds = films.stream().map(Film::getId).toList();
         Map<Long, Set<Genre>> genresByFilmId = findGenresByFilmIds(filmIds);
         Map<Long, Set<Long>> likesByFilmId = findLikesByFilmIds(filmIds);
+        Map<Long, Set<Director>> directorsByFilmId = findDirectorsByFilmIds(filmIds);
+
         for (Film film : films) {
             Long filmId = film.getId();
             Set<Genre> genres = genresByFilmId.getOrDefault(filmId, new HashSet<>());
             film.setGenres(genres);
             Set<Long> likes = likesByFilmId.getOrDefault(filmId, new HashSet<>());
             film.setLikes(likes);
+            film.setDirectors(directorsByFilmId.getOrDefault(filmId, new HashSet<>()));
         }
     }
 
