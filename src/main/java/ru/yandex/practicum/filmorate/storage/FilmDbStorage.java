@@ -12,7 +12,9 @@ import ru.yandex.practicum.filmorate.model.Mpa;
 
 import java.sql.PreparedStatement;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -150,8 +152,8 @@ public class FilmDbStorage implements FilmStorage {
             return new HashMap<Long, Set<Genre>>();
         }
         String placeholder = Stream.generate(() -> "?")
-                .limit(filmIds.size())
-                .collect(Collectors.joining(", "));
+                                   .limit(filmIds.size())
+                                   .collect(Collectors.joining(", "));
         String query = "select g.genre_id, g.name, fg.film_id from genres g join film_genres fg on fg.genre_id = g.genre_id where fg.film_id in (" + placeholder + ")";
         HashMap<Long, Set<Genre>> genresByFilmId = new HashMap<>();
         jdbc.query(query, rs -> {
@@ -160,7 +162,7 @@ public class FilmDbStorage implements FilmStorage {
             genre.setId(rs.getInt("genre_id"));
             genre.setName(rs.getString("name"));
             genresByFilmId.computeIfAbsent(filmId, id -> new HashSet<>())
-                    .add(genre);
+                          .add(genre);
         }, filmIds.toArray());
         return genresByFilmId;
     }
@@ -182,15 +184,15 @@ public class FilmDbStorage implements FilmStorage {
             return new HashMap<Long, Set<Long>>();
         }
         String placeholder = Stream.generate(() -> "?")
-                .limit(filmIds.size())
-                .collect(Collectors.joining(", "));
+                                   .limit(filmIds.size())
+                                   .collect(Collectors.joining(", "));
         String query = "select user_id, film_id from film_likes where film_id in (" + placeholder + ")";
         HashMap<Long, Set<Long>> likesByFilmId = new HashMap<>();
         jdbc.query(query, rs -> {
             Long filmId = rs.getLong("film_id");
             Long userId = rs.getLong("user_id");
             likesByFilmId.computeIfAbsent(filmId, id -> new HashSet<>())
-                    .add(userId);
+                         .add(userId);
         }, filmIds.toArray());
         return likesByFilmId;
     }
@@ -280,6 +282,42 @@ public class FilmDbStorage implements FilmStorage {
 
         populateLikesAndGenres(films);
 
+        return films;
+    }
+
+    @Override
+    public Map<Long, Set<Long>> getLikesFromAllUsers() {
+        Map<Long, Set<Long>> allLikes = new HashMap<>();
+        String query = "select film_id, user_id from film_likes";
+        jdbc.query(query, rs -> {
+            Long filmId = rs.getLong("film_id");
+            Long userId = rs.getLong("user_id");
+            allLikes.computeIfAbsent(userId, id -> new HashSet<>())
+                    .add(filmId);
+        });
+        return allLikes;
+    }
+
+    @Override
+    public List<Film> getFilmsByIds(Collection<Long> filmIds) {
+        if (filmIds == null || filmIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+        String placeholders = String.join(",", Collections.nCopies(filmIds.size(), "?"));
+        String query = """
+                SELECT f.film_id,
+                       f.name AS film_name,
+                       f.description,
+                       f.duration,
+                       f.release_date,
+                       m.mpa_id,
+                       m.name AS mpa_name
+                FROM films f
+                LEFT JOIN mpa m ON f.mpa_id = m.mpa_id
+                WHERE f.film_id IN (%s)
+                """.formatted(placeholders);
+        List<Film> films = jdbc.query(query, rowMapper, filmIds.toArray());
+        populateLikesAndGenres(films);
         return films;
     }
 }
