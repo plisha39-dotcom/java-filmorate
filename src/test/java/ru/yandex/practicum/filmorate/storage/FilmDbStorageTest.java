@@ -142,10 +142,10 @@ public class FilmDbStorageTest {
                 .isPresent()
                 .hasValueSatisfying(foundFilm -> {
                     assertThat(foundFilm).hasFieldOrPropertyWithValue("id", updateFilm.getId())
-                            .hasFieldOrPropertyWithValue("name", updateFilm.getName())
-                            .hasFieldOrPropertyWithValue("description", updateFilm.getDescription())
-                            .hasFieldOrPropertyWithValue("releaseDate", updateFilm.getReleaseDate())
-                            .hasFieldOrPropertyWithValue("duration", updateFilm.getDuration());
+                                         .hasFieldOrPropertyWithValue("name", updateFilm.getName())
+                                         .hasFieldOrPropertyWithValue("description", updateFilm.getDescription())
+                                         .hasFieldOrPropertyWithValue("releaseDate", updateFilm.getReleaseDate())
+                                         .hasFieldOrPropertyWithValue("duration", updateFilm.getDuration());
                     assertThat(foundFilm.getMpa().getId())
                             .isEqualTo(updateFilm.getMpa().getId());
                 });
@@ -501,5 +501,58 @@ public class FilmDbStorageTest {
                 .containsExactlyInAnyOrder(film.getId(), film1.getId());
         assertThat(likes.get(user1.getId()))
                 .containsExactlyInAnyOrder(film1.getId());
+    }
+
+    @Test
+    void testGetFilmsByIdsReturnsOnlyRequestedFilms() {
+        Film film = new Film();
+        film.setName("Интерстеллар");
+        film.setDescription("Фантастический фильм");
+        film.setReleaseDate(LocalDate.of(2014, 11, 6));
+        film.setDuration(169);
+        Mpa mpa = new Mpa();
+        mpa.setId(1);
+        film.setMpa(mpa);
+
+        filmStorage.create(film);
+
+        Film film1 = new Film();
+        film1.setName("Начало");
+        film1.setDescription("Новый фильм");
+        film1.setReleaseDate(LocalDate.of(2000, 11, 11));
+        film1.setDuration(150);
+        Mpa mpa1 = new Mpa();
+        mpa1.setId(1);
+        film1.setMpa(mpa1);
+
+        filmStorage.create(film1);
+
+        Film film2 = new Film();
+        film2.setName("Новое имя");
+        film2.setDescription("Новый фильм 2");
+        film2.setReleaseDate(LocalDate.of(2000, 11, 11));
+        film2.setDuration(150);
+        Mpa mpa2 = new Mpa();
+        mpa2.setId(1);
+        film2.setMpa(mpa2);
+
+        filmStorage.create(film2);
+
+        Set<Long> filmIds = Set.of(film.getId(), film2.getId());
+
+        List<Film> films = filmStorage.getFilmsByIds(filmIds);
+
+        assertThat(films)
+                .extracting(Film::getId)
+                .containsExactlyInAnyOrder(film.getId(), film2.getId());
+    }
+
+    @Test
+    void testGetFilmsByIdsWhenIdsEmptyReturnsEmptyList() {
+        Set<Long> filmIds = Set.of();
+
+        List<Film> films = filmStorage.getFilmsByIds(filmIds);
+
+        assertThat(films).isEmpty();
     }
 }

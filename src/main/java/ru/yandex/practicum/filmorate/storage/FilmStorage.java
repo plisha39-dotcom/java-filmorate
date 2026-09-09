@@ -28,4 +28,6 @@ public interface FilmStorage {
     List<Film> getPopularFilms(int count, Integer genreId, Integer year);
 
     Map<Long, Set<Long>> getLikesFromAllUsers();
+
+    List<Film> getFilmsByIds(Collection<Long> recommendationIds);
 }

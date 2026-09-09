@@ -142,10 +142,7 @@ public class UserService {
                 }
             }
         }
-        return filmStorage.findAll()
-                          .stream()
-                          .filter(film -> recommendationIds.contains(film.getId()))
-                          .toList();
+        return filmStorage.getFilmsByIds(recommendationIds);
     }
 }
 
