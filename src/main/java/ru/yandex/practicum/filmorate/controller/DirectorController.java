@@ -37,10 +37,6 @@ public class DirectorController {
 
     @PutMapping
     public Director update(@Valid @RequestBody Director director) {
-        if (director.getId() == null) {
-            log.warn("Ошибка валидации: отсутствует Id режиссера");
-            throw new ValidationException("Id режиссера должен быть указан");
-        }
         log.info("Обновление режиссера: {}", director.getName());
         return directorService.update(director);
     }

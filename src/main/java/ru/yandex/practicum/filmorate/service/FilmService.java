@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -16,11 +17,13 @@ import java.util.List;
 public class FilmService {
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
+    private final DirectorStorage directorStorage;
 
     public FilmService(@Qualifier("userDbStorage") UserStorage userStorage, @Qualifier("filmDbStorage")
-    FilmStorage filmStorage) {
+    FilmStorage filmStorage, @Qualifier("directorDbStorage")DirectorStorage directorStorage) {
         this.userStorage = userStorage;
         this.filmStorage = filmStorage;
+        this.directorStorage=directorStorage;
     }
 
     public void addLike(Long filmId, Long userId) {
@@ -87,6 +90,8 @@ public class FilmService {
         if (!sortBy.equals("year") && !sortBy.equals("likes")) {
             throw new ValidationException("Параметр sortBy должен быть 'year' или 'likes'");
         }
+        directorStorage.findById(directorId)
+                .orElseThrow(() -> new NotFoundException("Режиссер с id " + directorId + " не найден"));
         return filmStorage.getFilmsByDirector(directorId, sortBy);
     }
 }

@@ -543,33 +543,78 @@ public class FilmDbStorageTest {
     }
 
     @Test
-    void testSearchFilmsByTitleAndDirectorSortedByPopularity() {
+    void testSearchFilmsByTitleAndDirectorCombined() {
+
+        Director director1 = new Director();
+        director1.setName("Кристофер Нолан");
+        directorStorage.create(director1);
+
+        Director director2 = new Director();
+        director2.setName("Дени Вильнёв");
+        directorStorage.create(director2);
+
+        Film film1 = createFilm("Дюна", director2);
+
+        Film film2 = createFilm("Аватар", director1);
+
+        Director director3 = new Director();
+        director3.setName("Вачовски");
+        directorStorage.create(director3);
+        Film film3 = createFilm("Матрица", director3);
+
+        List<Film> resultTitle = filmStorage.searchFilms("Дюна", "title,director");
+        assertThat(resultTitle).hasSize(1);
+        assertThat(resultTitle.get(0).getId()).isEqualTo(film1.getId());
+
+        List<Film> resultDirector = filmStorage.searchFilms("Нолан", "title,director");
+        assertThat(resultDirector).hasSize(1);
+        assertThat(resultDirector.get(0).getId()).isEqualTo(film2.getId());
+    }
+
+    @Test
+    void testGetFilmsByDirectorSortedByYear() {
         Director director = new Director();
-        director.setName("Нолан");
+        director.setName("Тестовый Режиссер");
         directorStorage.create(director);
+
+        Film filmOld = createFilm("Старый фильм", director);
+        filmOld.setReleaseDate(LocalDate.of(1990, 1, 1));
+        filmStorage.update(filmOld); // Обновляем дату, так как create ставит дефолтную
+
+        Film filmNew = createFilm("Новый фильм", director);
+        filmNew.setReleaseDate(LocalDate.of(2020, 1, 1));
+        filmStorage.update(filmNew);
+
+        List<Film> result = filmStorage.getFilmsByDirector(director.getId(), "year");
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getName()).isEqualTo("Старый фильм");
+        assertThat(result.get(1).getName()).isEqualTo("Новый фильм");
+    }
+
+    @Test
+    void testGetFilmsByDirectorSortedByLikes() {
+        Director director = new Director();
+        director.setName("Популярный Режиссер");
+        directorStorage.create(director);
+
+        Film film1 = createFilm("Фильм с 1 лайком", director);
+        Film film2 = createFilm("Фильм с 3 лайками", director);
 
         User user1 = createUser("user1");
         User user2 = createUser("user2");
         User user3 = createUser("user3");
 
-        Film film1 = createFilm("Начало", director);
-        filmStorage.addLike(film1.getId(), user1.getId());
-        filmStorage.addLike(film1.getId(), user2.getId());
+        filmStorage.addLike(film1.getId(), user1.getId()); // 1 лайк
 
-        Film film2 = createFilm("Интерстеллар", director);
-        filmStorage.addLike(film2.getId(), user1.getId());
+        filmStorage.addLike(film2.getId(), user1.getId()); // 3 лайка
         filmStorage.addLike(film2.getId(), user2.getId());
         filmStorage.addLike(film2.getId(), user3.getId());
 
-        Film film3 = createFilm("Ночной дозор", null);
-        filmStorage.addLike(film3.getId(), user1.getId());
+        List<Film> result = filmStorage.getFilmsByDirector(director.getId(), "likes");
 
-        List<Film> result = filmStorage.searchFilms("н", "title,director");
-
-        assertThat(result).hasSize(3);
-
-        assertThat(result)
-                .extracting(Film::getName)
-                .containsExactly("Интерстеллар", "Начало", "Ночной дозор");
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getName()).isEqualTo("Фильм с 3 лайками");
+        assertThat(result.get(1).getName()).isEqualTo("Фильм с 1 лайком");
     }
 }

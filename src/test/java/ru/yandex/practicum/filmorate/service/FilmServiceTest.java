@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
@@ -17,17 +18,21 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 public class FilmServiceTest {
     private FilmStorage filmStorage;
     private UserStorage userStorage;
     private FilmService filmService;
+    private DirectorStorage directorStorage;
 
     @BeforeEach
     void setUp() {
         userStorage = new InMemoryUserStorage();
         filmStorage = new InMemoryFilmStorage();
-        filmService = new FilmService(userStorage, filmStorage);
+        directorStorage = mock(DirectorStorage.class);
+
+        filmService = new FilmService(userStorage, filmStorage, directorStorage);
 
     }
 

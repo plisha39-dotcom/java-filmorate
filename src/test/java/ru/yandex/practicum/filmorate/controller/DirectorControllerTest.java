@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.controller;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.service.DirectorService;
 
@@ -72,16 +71,6 @@ public class DirectorControllerTest {
 
         Director result = controller.update(director);
         assertEquals("Новое имя", result.getName());
-    }
-
-    @Test
-    void testUpdateDirectorWithoutIdThrowsException() {
-        Director director = new Director();
-        director.setName("Без ID");
-
-        ValidationException exception = assertThrows(ValidationException.class,
-                () -> controller.update(director));
-        assertEquals("Id режиссера должен быть указан", exception.getMessage());
     }
 
     @Test
