@@ -15,10 +15,12 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class FilmServiceTest {
     private FilmStorage filmStorage;
@@ -283,5 +285,14 @@ public class FilmServiceTest {
 
         assertTrue(filmStorage.findById(film.getId()).isEmpty(),
                 "Фильм должен быть удален");
+    }
+
+    @Test
+    void testGetFilmsByDirectorThrowsNotFoundExceptionWhenDirectorDoesNotExist() {
+        when(directorStorage.findById(999)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class,
+                () -> filmService.getFilmsByDirector(999, "year"),
+                "Поиск фильмов несуществующего режиссера должен выбрасывать NotFoundException");
     }
 }

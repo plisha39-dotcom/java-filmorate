@@ -617,4 +617,32 @@ public class FilmDbStorageTest {
         assertThat(result.get(0).getName()).isEqualTo("Фильм с 3 лайками");
         assertThat(result.get(1).getName()).isEqualTo("Фильм с 1 лайком");
     }
+
+    @Test
+    void testSearchFilmsSortedByPopularity() {
+        Director director = new Director();
+        director.setName("Кристофер Нолан");
+        directorStorage.create(director);
+
+        Film filmMostPopular = createFilm("Начало", director);
+        Film filmMediumPopular = createFilm("Интерстеллар", director);
+        Film filmNotPopular = createFilm("Довод", director);
+
+        User user1 = createUser("user1");
+        User user2 = createUser("user2");
+        User user3 = createUser("user3");
+
+        filmStorage.addLike(filmMostPopular.getId(), user1.getId());
+        filmStorage.addLike(filmMostPopular.getId(), user2.getId());
+        filmStorage.addLike(filmMostPopular.getId(), user3.getId());
+
+        filmStorage.addLike(filmMediumPopular.getId(), user1.getId());
+
+        List<Film> result = filmStorage.searchFilms("Нолан", "title,director");
+
+        assertThat(result).hasSize(3);
+        assertThat(result.get(0).getId()).isEqualTo(filmMostPopular.getId());
+        assertThat(result.get(1).getId()).isEqualTo(filmMediumPopular.getId());
+        assertThat(result.get(2).getId()).isEqualTo(filmNotPopular.getId());
+    }
 }
