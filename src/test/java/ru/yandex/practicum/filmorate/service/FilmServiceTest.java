@@ -7,6 +7,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
@@ -14,17 +15,26 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class FilmServiceTest {
     private FilmStorage filmStorage;
     private UserStorage userStorage;
     private FilmService filmService;
+    private DirectorStorage directorStorage;
 
     @BeforeEach
     void setUp() {
         userStorage = new InMemoryUserStorage();
         filmStorage = new InMemoryFilmStorage();
-        filmService = new FilmService(userStorage, filmStorage);
+        directorStorage = mock(DirectorStorage.class);
+
+        filmService = new FilmService(userStorage, filmStorage, directorStorage);
 
     }
 
@@ -50,7 +60,7 @@ public class FilmServiceTest {
 
         Film savedFilm = filmStorage.findById(film.getId()).orElseThrow();
 
-        Assertions.assertTrue(savedFilm.getLikes().contains(user.getId()),
+        assertTrue(savedFilm.getLikes().contains(user.getId()),
                 "У фильма должен быть 1 лайк от пользователя");
         Assertions.assertEquals(1, savedFilm.getLikes().size(),
                 "Количество лайков у фильма == 1");
@@ -79,7 +89,7 @@ public class FilmServiceTest {
 
         Film savedFilm = filmStorage.findById(film.getId()).orElseThrow();
 
-        Assertions.assertTrue(savedFilm.getLikes().contains(user.getId()),
+        assertTrue(savedFilm.getLikes().contains(user.getId()),
                 "У фильма должен быть 1 лайк от пользователя");
         Assertions.assertEquals(1, savedFilm.getLikes().size(),
                 "Количество лайков у фильма == 1");
@@ -109,7 +119,7 @@ public class FilmServiceTest {
 
         Film savedFilm = filmStorage.findById(film.getId()).orElseThrow();
 
-        Assertions.assertTrue(
+        assertTrue(
                 savedFilm.getLikes().isEmpty(),
                 "Список лайков должен быть пустым"
         );
@@ -200,13 +210,13 @@ public class FilmServiceTest {
 
         filmStorage.create(film);
 
-        Assertions.assertThrows(NotFoundException.class,
+        assertThrows(NotFoundException.class,
                 () -> filmService.addLike(film.getId(), 999L),
                 "При добавлении лайка от несуществующего пользователя должен выбрасываться NotFoundException"
         );
 
 
-        Assertions.assertTrue(
+        assertTrue(
                 filmStorage.findById(film.getId()).orElseThrow().getLikes().isEmpty(),
                 "Список лайков должен быть пустым"
         );
@@ -222,14 +232,14 @@ public class FilmServiceTest {
 
         userStorage.create(user);
 
-        Assertions.assertThrows(NotFoundException.class,
+        assertThrows(NotFoundException.class,
                 () -> filmService.addLike(999L, user.getId()),
                 "При пустом фильме должен выброситься NotFoundException");
     }
 
     @Test
     void testGetPopularFilmsThrowsValidationExceptionWhenCountIsNegative() {
-        Assertions.assertThrows(ValidationException.class,
+        assertThrows(ValidationException.class,
                 () -> filmService.getPopularFilms(-1, null, null),
                 "При отрицательном количестве фильмов должна выбрасываться ValidationException");
     }
@@ -244,8 +254,45 @@ public class FilmServiceTest {
 
         userStorage.create(user);
 
-        Assertions.assertThrows(NotFoundException.class,
+        assertThrows(NotFoundException.class,
                 () -> filmService.getCommonFilms(user.getId(), 999L),
                 "При отсутствии второго пользователя должен выброситься NotFoundException");
+    }
+
+    @Test
+    void testSearchFilmsThrowsValidationExceptionWhenQueryIsBlank() {
+        assertThrows(ValidationException.class,
+                () -> filmService.searchFilms("   ", "title"),
+                "Поисковый запрос не может быть пустым");
+    }
+
+    @Test
+    void testSearchFilmsThrowsValidationExceptionWhenByIsInvalid() {
+        assertThrows(ValidationException.class,
+                () -> filmService.searchFilms("Нолан", "invalid_param"),
+                "Параметр 'by' должен быть 'title', 'director' или 'title,director'");
+    }
+
+    @Test
+    void testDeleteFilmSuccess() {
+        Film film = new Film();
+        film.setName("Тест");
+        film.setReleaseDate(LocalDate.of(2020, 1, 1));
+        film.setDuration(90);
+        filmStorage.create(film);
+
+        filmService.deleteFilm(film.getId());
+
+        assertTrue(filmStorage.findById(film.getId()).isEmpty(),
+                "Фильм должен быть удален");
+    }
+
+    @Test
+    void testGetFilmsByDirectorThrowsNotFoundExceptionWhenDirectorDoesNotExist() {
+        when(directorStorage.findById(999)).thenReturn(Optional.empty());
+
+        assertThrows(NotFoundException.class,
+                () -> filmService.getFilmsByDirector(999, "year"),
+                "Поиск фильмов несуществующего режиссера должен выбрасывать NotFoundException");
     }
 }

@@ -97,11 +97,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     @Override
     public List<Film> getPopularFilms(int count, Integer genreId, Integer year) {
         return films.values().stream()
-                    .filter(film -> genreId == null || film.getGenres().stream().anyMatch(g -> g.getId() == genreId))
-                    .filter(film -> year == null || film.getReleaseDate().getYear() == year)
-                    .sorted((film1, film2) -> Integer.compare(film2.getLikes().size(), film1.getLikes().size()))
-                    .limit(count)
-                    .toList();
+                .filter(film -> genreId == null || film.getGenres().stream().anyMatch(g -> g.getId() == genreId))
+                .filter(film -> year == null || film.getReleaseDate().getYear() == year)
+                .sorted((film1, film2) -> Integer.compare(film2.getLikes().size(), film1.getLikes().size()))
+                .limit(count)
+                .toList();
     }
 
     @Override
@@ -123,12 +123,47 @@ public class InMemoryFilmStorage implements FilmStorage {
             return new ArrayList<>();
         }
         return films.values()
-                    .stream()
-                    .filter(film -> filmIds.contains(film.getId()))
-                    .toList();
+                .stream()
+                .filter(film -> filmIds.contains(film.getId()))
+                .toList();
     }
 
     private long getNextId() {
         return ++currentId;
+    }
+
+    public List<Film> searchFilms(String query, String by) {
+        boolean searchByTitle = by.contains("title");
+        boolean searchByDirector = by.contains("director");
+        String lowerQuery = query.toLowerCase();
+
+        return films.values().stream()
+                .filter(film -> {
+                    boolean titleMatch = searchByTitle && film.getName().toLowerCase().contains(lowerQuery);
+                    boolean directorMatch = false;
+                    if (searchByDirector && film.getDirectors() != null) {
+                        directorMatch = film.getDirectors().stream()
+                                .anyMatch(director -> director.getName().toLowerCase().contains(lowerQuery));
+                    }
+                    return titleMatch || directorMatch;
+                })
+                .sorted((f1, f2) -> Integer.compare(f2.getLikes().size(), f1.getLikes().size()))
+                .toList();
+
+    }
+
+    @Override
+    public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
+        return films.values().stream()
+                .filter(film -> film.getDirectors() != null &&
+                        film.getDirectors().stream().anyMatch(d -> d.getId().equals(directorId)))
+                .sorted((f1, f2) -> {
+                    if ("year".equalsIgnoreCase(sortBy)) {
+                        return f1.getReleaseDate().compareTo(f2.getReleaseDate());
+                    } else {
+                        return Integer.compare(f2.getLikes().size(), f1.getLikes().size());
+                    }
+                })
+                .toList();
     }
 }

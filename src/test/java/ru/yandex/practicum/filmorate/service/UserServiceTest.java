@@ -22,8 +22,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class UserServiceTest {
     private UserStorage userStorage;
@@ -228,7 +229,7 @@ public class UserServiceTest {
 
         userStorage.create(user);
 
-        Assertions.assertThrows(
+        assertThrows(
                 NotFoundException.class,
                 () -> userService.addFriend(user.getId(), 999L),
                 "При добавлении несуществующего друга должно выбрасываться NotFoundException"
@@ -366,5 +367,20 @@ public class UserServiceTest {
     void testRecommendationsThrowNotFoundExceptionWhenUserDoesNotExist() {
         assertThatThrownBy(() -> userService.getRecommendations(999L))
                 .isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
+    void testDeleteUserSuccess() {
+        User user = new User();
+        user.setName("Борис");
+        user.setLogin("BOR");
+        user.setEmail("bor@yandex.ru");
+        user.setBirthday(LocalDate.of(1999, 1, 15));
+        userStorage.create(user);
+
+        userService.deleteUser(user.getId());
+
+        assertThrows(NotFoundException.class, () -> userService.getFriends(user.getId()),
+                "Удаленный пользователь не должен находиться");
     }
 }

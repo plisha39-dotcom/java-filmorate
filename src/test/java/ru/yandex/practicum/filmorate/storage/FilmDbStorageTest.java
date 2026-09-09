@@ -7,6 +7,7 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.jdbc.core.JdbcTemplate;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Mpa;
 import ru.yandex.practicum.filmorate.model.User;
@@ -22,11 +23,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @JdbcTest
 @AutoConfigureTestDatabase
-@Import({FilmDbStorage.class, UserDbStorage.class})
+@Import({FilmDbStorage.class, UserDbStorage.class, DirectorDbStorage.class})
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class FilmDbStorageTest {
     private final FilmDbStorage filmStorage;
     private final UserDbStorage userStorage;
+    private final DirectorDbStorage directorStorage;
 
     @Autowired
     private JdbcTemplate jdbc;
@@ -554,5 +556,156 @@ public class FilmDbStorageTest {
         List<Film> films = filmStorage.getFilmsByIds(filmIds);
 
         assertThat(films).isEmpty();
+    }
+
+    private Film createFilm(String name, Director director) {
+        Film film = new Film();
+        film.setName(name);
+        film.setDescription("Описание");
+        film.setReleaseDate(LocalDate.of(2010, 1, 1));
+        film.setDuration(120);
+        if (director != null) {
+            film.setDirectors(Set.of(director));
+        }
+        return filmStorage.create(film);
+    }
+
+    private User createUser(String login) {
+        User user = new User();
+        user.setName("Имя");
+        user.setLogin(login);
+        user.setEmail(login + "@yandex.ru");
+        user.setBirthday(LocalDate.of(1990, 1, 1));
+        return userStorage.create(user);
+    }
+
+    @Test
+    void testSearchFilmsByTitle() {
+        createFilm("Начало", null);
+        createFilm("Интерстеллар", null);
+
+        List<Film> result = filmStorage.searchFilms("нач", "title");
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getName()).isEqualTo("Начало");
+    }
+
+    @Test
+    void testSearchFilmsByDirector() {
+        Director director = new Director();
+        director.setName("Кристофер Нолан");
+        directorStorage.create(director);
+
+        createFilm("Фильм 1", director);
+        createFilm("Фильм 2", null);
+
+        List<Film> result = filmStorage.searchFilms("нол", "director");
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).getName()).isEqualTo("Фильм 1");
+    }
+
+    @Test
+    void testSearchFilmsByTitleAndDirectorCombined() {
+
+        Director director1 = new Director();
+        director1.setName("Кристофер Нолан");
+        directorStorage.create(director1);
+
+        Director director2 = new Director();
+        director2.setName("Дени Вильнёв");
+        directorStorage.create(director2);
+
+        Film film1 = createFilm("Дюна", director2);
+
+        Film film2 = createFilm("Аватар", director1);
+
+        Director director3 = new Director();
+        director3.setName("Вачовски");
+        directorStorage.create(director3);
+        Film film3 = createFilm("Матрица", director3);
+
+        List<Film> resultTitle = filmStorage.searchFilms("Дюна", "title,director");
+        assertThat(resultTitle).hasSize(1);
+        assertThat(resultTitle.get(0).getId()).isEqualTo(film1.getId());
+
+        List<Film> resultDirector = filmStorage.searchFilms("Нолан", "title,director");
+        assertThat(resultDirector).hasSize(1);
+        assertThat(resultDirector.get(0).getId()).isEqualTo(film2.getId());
+    }
+
+    @Test
+    void testGetFilmsByDirectorSortedByYear() {
+        Director director = new Director();
+        director.setName("Тестовый Режиссер");
+        directorStorage.create(director);
+
+        Film filmOld = createFilm("Старый фильм", director);
+        filmOld.setReleaseDate(LocalDate.of(1990, 1, 1));
+        filmStorage.update(filmOld); // Обновляем дату, так как create ставит дефолтную
+
+        Film filmNew = createFilm("Новый фильм", director);
+        filmNew.setReleaseDate(LocalDate.of(2020, 1, 1));
+        filmStorage.update(filmNew);
+
+        List<Film> result = filmStorage.getFilmsByDirector(director.getId(), "year");
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getName()).isEqualTo("Старый фильм");
+        assertThat(result.get(1).getName()).isEqualTo("Новый фильм");
+    }
+
+    @Test
+    void testGetFilmsByDirectorSortedByLikes() {
+        Director director = new Director();
+        director.setName("Популярный Режиссер");
+        directorStorage.create(director);
+
+        Film film1 = createFilm("Фильм с 1 лайком", director);
+        Film film2 = createFilm("Фильм с 3 лайками", director);
+
+        User user1 = createUser("user1");
+        User user2 = createUser("user2");
+        User user3 = createUser("user3");
+
+        filmStorage.addLike(film1.getId(), user1.getId()); // 1 лайк
+
+        filmStorage.addLike(film2.getId(), user1.getId()); // 3 лайка
+        filmStorage.addLike(film2.getId(), user2.getId());
+        filmStorage.addLike(film2.getId(), user3.getId());
+
+        List<Film> result = filmStorage.getFilmsByDirector(director.getId(), "likes");
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).getName()).isEqualTo("Фильм с 3 лайками");
+        assertThat(result.get(1).getName()).isEqualTo("Фильм с 1 лайком");
+    }
+
+    @Test
+    void testSearchFilmsSortedByPopularity() {
+        Director director = new Director();
+        director.setName("Кристофер Нолан");
+        directorStorage.create(director);
+
+        Film filmMostPopular = createFilm("Начало", director);
+        Film filmMediumPopular = createFilm("Интерстеллар", director);
+        Film filmNotPopular = createFilm("Довод", director);
+
+        User user1 = createUser("user1");
+        User user2 = createUser("user2");
+        User user3 = createUser("user3");
+
+        filmStorage.addLike(filmMostPopular.getId(), user1.getId());
+        filmStorage.addLike(filmMostPopular.getId(), user2.getId());
+        filmStorage.addLike(filmMostPopular.getId(), user3.getId());
+
+        filmStorage.addLike(filmMediumPopular.getId(), user1.getId());
+
+        List<Film> result = filmStorage.searchFilms("Нолан", "title,director");
+
+        assertThat(result).hasSize(3);
+        assertThat(result.get(0).getId()).isEqualTo(filmMostPopular.getId());
+        assertThat(result.get(1).getId()).isEqualTo(filmMediumPopular.getId());
+        assertThat(result.get(2).getId()).isEqualTo(filmNotPopular.getId());
     }
 }
