@@ -157,8 +157,8 @@ public class FilmDbStorage implements FilmStorage {
             return new HashMap<Long, Set<Genre>>();
         }
         String placeholder = Stream.generate(() -> "?")
-                .limit(filmIds.size())
-                .collect(Collectors.joining(", "));
+                                   .limit(filmIds.size())
+                                   .collect(Collectors.joining(", "));
         String query = "select g.genre_id, g.name, fg.film_id from genres g join film_genres fg on fg.genre_id = g.genre_id where fg.film_id in (" + placeholder + ")";
         HashMap<Long, Set<Genre>> genresByFilmId = new HashMap<>();
         jdbc.query(query, rs -> {
@@ -167,7 +167,7 @@ public class FilmDbStorage implements FilmStorage {
             genre.setId(rs.getInt("genre_id"));
             genre.setName(rs.getString("name"));
             genresByFilmId.computeIfAbsent(filmId, id -> new HashSet<>())
-                    .add(genre);
+                          .add(genre);
         }, filmIds.toArray());
         return genresByFilmId;
     }
@@ -189,15 +189,15 @@ public class FilmDbStorage implements FilmStorage {
             return new HashMap<Long, Set<Long>>();
         }
         String placeholder = Stream.generate(() -> "?")
-                .limit(filmIds.size())
-                .collect(Collectors.joining(", "));
+                                   .limit(filmIds.size())
+                                   .collect(Collectors.joining(", "));
         String query = "select user_id, film_id from film_likes where film_id in (" + placeholder + ")";
         HashMap<Long, Set<Long>> likesByFilmId = new HashMap<>();
         jdbc.query(query, rs -> {
             Long filmId = rs.getLong("film_id");
             Long userId = rs.getLong("user_id");
             likesByFilmId.computeIfAbsent(filmId, id -> new HashSet<>())
-                    .add(userId);
+                         .add(userId);
         }, filmIds.toArray());
         return likesByFilmId;
     }
