@@ -20,10 +20,10 @@ public class FilmService {
     private final DirectorStorage directorStorage;
 
     public FilmService(@Qualifier("userDbStorage") UserStorage userStorage, @Qualifier("filmDbStorage")
-    FilmStorage filmStorage, @Qualifier("directorDbStorage")DirectorStorage directorStorage) {
+    FilmStorage filmStorage, @Qualifier("directorDbStorage") DirectorStorage directorStorage) {
         this.userStorage = userStorage;
         this.filmStorage = filmStorage;
-        this.directorStorage=directorStorage;
+        this.directorStorage = directorStorage;
     }
 
     public void addLike(Long filmId, Long userId) {
