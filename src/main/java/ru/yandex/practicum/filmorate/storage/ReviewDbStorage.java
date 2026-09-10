@@ -6,7 +6,6 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.PreparedStatement;
 import java.util.List;
@@ -100,8 +99,8 @@ public class ReviewDbStorage implements ReviewStorage {
     }
 
     private void updateReviewUsefulField(Long reviewId) {
-        String sql = "UPDATE reviews SET useful = (SELECT COALESCE(SUM(CASE WHEN is_like = true THEN 1 ELSE -1 END), 0) " +
+        String query = "UPDATE reviews SET useful = (SELECT COALESCE(SUM(CASE WHEN is_like = true THEN 1 ELSE -1 END), 0) " +
                 "FROM review_likes WHERE review_id = ?) WHERE review_id = ?";
-        jdbc.update(sql, reviewId, reviewId);
+        jdbc.update(query, reviewId, reviewId);
     }
 }
