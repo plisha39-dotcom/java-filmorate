@@ -5,6 +5,7 @@ import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
 
 import java.sql.PreparedStatement;
@@ -34,7 +35,7 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public Review create(Review review) {
-        String query = "INSERT INTO reviews (content, is_positive, user_id, film_id, useful) VALUES (?, ?, ?, ?, ?)";
+        String query = "INSERT INTO reviews (content, is_positive, user_id, film_id, useful) VALUES (?, ?, ?, ?, 0)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbc.update(connection -> {
@@ -43,21 +44,22 @@ public class ReviewDbStorage implements ReviewStorage {
             ps.setBoolean(2, review.getIsPositive());
             ps.setLong(3, review.getUserId());
             ps.setLong(4, review.getFilmId());
-            ps.setInt(5, review.getUseful());
             return ps;
         }, keyHolder);
 
         review.setReviewId(Objects.requireNonNull(keyHolder.getKey()).longValue());
+        review.setUseful(0);
         return review;
     }
 
     @Override
     public Review update(Review review) {
-
         String query = "UPDATE reviews SET content = ?, is_positive = ? WHERE review_id = ?";
-        jdbc.update(query, review.getContent(), review.getIsPositive(), review.getReviewId());
-
-        return findById(review.getReviewId()).orElse(review);
+        int rowsUpdate = jdbc.update(query, review.getContent(), review.getIsPositive(), review.getReviewId());
+        if (rowsUpdate == 0) {
+            throw new NotFoundException("Не удалось обновить данные отзыва с id " + review.getReviewId());
+        }
+        return findById(review.getReviewId()).get();
     }
 
     @Override

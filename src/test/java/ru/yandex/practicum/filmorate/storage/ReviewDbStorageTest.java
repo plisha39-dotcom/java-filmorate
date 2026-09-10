@@ -12,6 +12,7 @@ import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -96,6 +97,39 @@ class ReviewDbStorageTest {
         reviewStorage.addLikeDislike(review.getReviewId(), userWhoLikes.getId(), false);
         Optional<Review> withDislike = reviewStorage.findById(review.getReviewId());
         assertThat(withDislike).isPresent().hasValueSatisfying(r -> assertThat(r.getUseful()).isEqualTo(-1));
+    }
+
+    @Test
+    void testFindReviewsByFilmIdWithSortingAndLimit() {
+        User author = createTestUser();
+        User userWhoLikes = createTestUser();
+        Film film = createTestFilm();
+
+        Review r1 = new Review();
+        r1.setContent("Обычный отзыв");
+        r1.setIsPositive(true);
+        r1.setUserId(author.getId());
+        r1.setFilmId(film.getId());
+        reviewStorage.create(r1);
+
+        Review r2 = new Review();
+        r2.setContent("Полезный отзыв");
+        r2.setIsPositive(true);
+        r2.setUserId(author.getId());
+        r2.setFilmId(film.getId());
+        reviewStorage.create(r2);
+        reviewStorage.addLikeDislike(r2.getReviewId(), userWhoLikes.getId(), true);
+
+        List<Review> reviews = reviewStorage.findReviewsByFilmId(film.getId(), 10);
+
+        assertThat(reviews).hasSize(2);
+
+        assertThat(reviews.get(0).getReviewId()).isEqualTo(r2.getReviewId());
+        assertThat(reviews.get(1).getReviewId()).isEqualTo(r1.getReviewId());
+
+        List<Review> limitedReviews = reviewStorage.findReviewsByFilmId(film.getId(), 1);
+        assertThat(limitedReviews).hasSize(1);
+        assertThat(limitedReviews.getFirst().getReviewId()).isEqualTo(r2.getReviewId());
     }
 
     private User createTestUser() {

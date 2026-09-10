@@ -51,7 +51,6 @@ public class ReviewService {
     public void delete(Long id) {
         checkReviewExists(id);
         reviewStorage.delete(id);
-        reviewStorage.delete(id);
     }
 
     public Review getReviewId(Long id) {
