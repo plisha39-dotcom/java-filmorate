@@ -102,7 +102,7 @@ class ReviewDbStorageTest {
         User user = new User();
         user.setName("Борис");
         user.setLogin("BOR");
-        user.setEmail(System.currentTimeMillis() + "bor@yandex.ru"); // уникальный email для каждого вызова
+        user.setEmail(System.currentTimeMillis() + "bor@yandex.ru");
         user.setBirthday(LocalDate.of(1999, 1, 15));
         userStorage.create(user);
         return user;
