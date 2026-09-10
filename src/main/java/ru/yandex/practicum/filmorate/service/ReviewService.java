@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
@@ -26,6 +27,36 @@ public class ReviewService {
         this.reviewStorage = reviewStorage;
         this.userStorage = userStorage;
         this.filmStorage = filmStorage;
+    }
+
+    public Review create(Review review) {
+        checkUserExists(review.getUserId());
+        checkFilmExists(review.getFilmId());
+        return reviewStorage.create(review);
+    }
+
+    public Review update(Review review) {
+        if (review == null) {
+            throw new ValidationException("Отзыв не может быть пустым");
+        }
+        if (review.getReviewId() == null) {
+            throw new ValidationException("Id должен быть указан");
+        }
+        checkReviewExists(review.getReviewId());
+        checkUserExists(review.getUserId());
+        checkFilmExists(review.getFilmId());
+        return reviewStorage.update(review);
+    }
+
+    public void delete(Long id) {
+        checkReviewExists(id);
+        reviewStorage.delete(id);
+        reviewStorage.delete(id);
+    }
+
+    public Review getReviewId(Long id) {
+        return reviewStorage.findById(id)
+                .orElseThrow(() -> new NotFoundException("Отзыв с id " + id + " не найден"));
     }
 
     public List<Review> getReviewsByFilmId(Long filmId, int count) {
