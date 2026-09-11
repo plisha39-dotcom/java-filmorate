@@ -25,8 +25,9 @@ public class ReviewServiceTest {
         reviewStorage = mock(ReviewStorage.class);
         userStorage = mock(UserStorage.class);
         filmStorage = mock(FilmStorage.class);
+        EventService eventService = mock(EventService.class);
 
-        service = new ReviewService(reviewStorage, userStorage, filmStorage);
+        service = new ReviewService(reviewStorage, userStorage, filmStorage, eventService);
     }
 
     @Test

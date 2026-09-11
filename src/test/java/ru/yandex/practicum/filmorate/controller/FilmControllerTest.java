@@ -5,6 +5,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
@@ -34,12 +35,14 @@ public class FilmControllerTest {
     private final MpaStorage mpaStorage = mock(MpaStorage.class);
     private final GenreStorage genreStorage = mock(GenreStorage.class);
     private final DirectorStorage directorStorage = mock(DirectorStorage.class);
+    private EventService eventService;
 
     @BeforeEach
     void setUp() {
+        eventService = mock(EventService.class);
         filmStorage = new InMemoryFilmStorage();
         userStorage = new InMemoryUserStorage();
-        filmService = new FilmService(userStorage, filmStorage, directorStorage);
+        filmService = new FilmService(userStorage, filmStorage, directorStorage, eventService);
         controller = new FilmController(filmStorage, filmService, mpaStorage, genreStorage, directorStorage);
     }
 

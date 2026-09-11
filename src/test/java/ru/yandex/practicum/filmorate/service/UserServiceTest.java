@@ -26,18 +26,22 @@ import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import static org.mockito.Mockito.mock;
+
 public class UserServiceTest {
     private UserStorage userStorage;
     private UserService userService;
     private FilmStorage filmStorage;
     private FriendshipStorage friendshipStorage;
+    private EventService eventService;
 
     @BeforeEach
     void setUp() {
         userStorage = new InMemoryUserStorage();
         filmStorage = new InMemoryFilmStorage();
         friendshipStorage = Mockito.mock(FriendshipStorage.class);
-        userService = new UserService(userStorage, filmStorage, friendshipStorage);
+        eventService = mock(EventService.class);
+        userService = new UserService(userStorage, filmStorage, friendshipStorage,eventService);
     }
 
     @Test
@@ -382,5 +386,11 @@ public class UserServiceTest {
 
         assertThrows(NotFoundException.class, () -> userService.getFriends(user.getId()),
                 "Удаленный пользователь не должен находиться");
+    }
+
+    @Test
+    void testGetFeedThrowNotFoundExceptionWhenUserDoesNotExist() {
+        assertThatThrownBy(() -> userService.getFeed(999L))
+                .isInstanceOf(NotFoundException.class);
     }
 }

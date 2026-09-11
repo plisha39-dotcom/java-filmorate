@@ -22,19 +22,22 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import static org.mockito.Mockito.mock;
+
 public class FilmServiceTest {
     private FilmStorage filmStorage;
     private UserStorage userStorage;
     private FilmService filmService;
     private DirectorStorage directorStorage;
+    private EventService eventService;
 
     @BeforeEach
     void setUp() {
         userStorage = new InMemoryUserStorage();
         filmStorage = new InMemoryFilmStorage();
         directorStorage = mock(DirectorStorage.class);
-
-        filmService = new FilmService(userStorage, filmStorage, directorStorage);
+        eventService = mock(EventService.class);
+        filmService = new FilmService(userStorage, filmStorage,directorStorage, eventService);
 
     }
 

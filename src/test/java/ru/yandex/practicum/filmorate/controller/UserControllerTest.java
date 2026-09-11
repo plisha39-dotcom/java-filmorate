@@ -5,17 +5,15 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
-import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.*;
 
 import java.time.LocalDate;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.mock;
 
 public class UserControllerTest {
     private UserStorage userStorage;
@@ -23,13 +21,15 @@ public class UserControllerTest {
     private UserService userService;
     private FilmStorage filmStorage;
     private FriendshipStorage friendshipStorage;
+    private EventService eventService;
 
     @BeforeEach
     void setUp() {
+        eventService = mock(EventService.class);
         userStorage = new InMemoryUserStorage();
         filmStorage = new InMemoryFilmStorage();
         friendshipStorage = Mockito.mock(FriendshipStorage.class);
-        userService = new UserService(userStorage, filmStorage, friendshipStorage);
+        userService = new UserService(userStorage, filmStorage, friendshipStorage, eventService);
         controller = new UserController(userStorage, userService);
     }
 
@@ -119,5 +119,20 @@ public class UserControllerTest {
         assertThrows(NotFoundException.class,
                 () -> controller.deleteUser(999L),
                 "Удаление несуществующего пользователя должно выбрасывать NotFoundException");
+    }
+
+    @Test
+    void testGetFeedWhenFeedIsEmpty() {
+        User user = new User();
+        user.setName("Борис");
+        user.setLogin("BOR");
+        user.setEmail("bor@yandex.ru");
+        user.setBirthday(LocalDate.of(1999, 1, 15));
+        User createdUser = controller.create(user);
+
+        Mockito.when(eventService.getFeed(createdUser.getId())).thenReturn(java.util.List.of());
+
+        assertEquals(0, controller.getFeed(createdUser.getId()).size());
+        Mockito.verify(eventService, Mockito.times(1)).getFeed(createdUser.getId());
     }
 }
