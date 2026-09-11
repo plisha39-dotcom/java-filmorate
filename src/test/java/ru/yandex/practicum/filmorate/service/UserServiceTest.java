@@ -15,9 +15,6 @@ import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
 import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
-import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
-import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
@@ -389,5 +386,11 @@ public class UserServiceTest {
 
         assertThrows(NotFoundException.class, () -> userService.getFriends(user.getId()),
                 "Удаленный пользователь не должен находиться");
+    }
+
+    @Test
+    void testGetFeedThrowNotFoundExceptionWhenUserDoesNotExist() {
+        assertThatThrownBy(() -> userService.getFeed(999L))
+                .isInstanceOf(NotFoundException.class);
     }
 }

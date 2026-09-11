@@ -1,14 +1,11 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.EventType;
 import ru.yandex.practicum.filmorate.model.Operation;
 import ru.yandex.practicum.filmorate.storage.EventStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.Instant;
 import java.util.List;
@@ -17,12 +14,9 @@ import java.util.List;
 @Service
 public class EventService {
     private final EventStorage eventStorage;
-    private final UserStorage userStorage;
 
-    public EventService(EventStorage eventStorage,
-                        @Qualifier("userDbStorage") UserStorage userStorage) {
+    public EventService(EventStorage eventStorage) {
         this.eventStorage = eventStorage;
-        this.userStorage = userStorage;
     }
 
     public void createEvent(Long userId, EventType eventType, Operation operation, Long entityId) {
@@ -37,9 +31,6 @@ public class EventService {
     }
 
     public List<Event> getFeed(Long userId) {
-        userStorage.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
         return eventStorage.getFeedByUserId(userId);
     }
-
 }
