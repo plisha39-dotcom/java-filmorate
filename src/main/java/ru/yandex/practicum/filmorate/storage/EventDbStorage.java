@@ -44,7 +44,7 @@ public class EventDbStorage implements EventStorage {
 
     @Override
     public List<Event> getFeedByUserId(Long userId) {
-        String sql = "SELECT * FROM events WHERE user_id = ? ORDER BY event_id ASC";
+        String sql = "SELECT * FROM events WHERE user_id = ? ORDER BY event_id DESC";
         return jdbc.query(sql, rowMapper, userId);
     }
 }
