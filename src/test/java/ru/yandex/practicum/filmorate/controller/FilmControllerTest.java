@@ -8,6 +8,7 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
@@ -33,6 +34,7 @@ public class FilmControllerTest {
     private FilmController controller;
     private final MpaStorage mpaStorage = mock(MpaStorage.class);
     private final GenreStorage genreStorage = mock(GenreStorage.class);
+    private final DirectorStorage directorStorage = mock(DirectorStorage.class);
     private EventService eventService;
 
     @BeforeEach
@@ -40,8 +42,8 @@ public class FilmControllerTest {
         eventService = mock(EventService.class);
         filmStorage = new InMemoryFilmStorage();
         userStorage = new InMemoryUserStorage();
-        filmService = new FilmService(userStorage, filmStorage, eventService);
-        controller = new FilmController(filmStorage, filmService, mpaStorage, genreStorage);
+        filmService = new FilmService(userStorage, filmStorage, directorStorage, eventService);
+        controller = new FilmController(filmStorage, filmService, mpaStorage, genreStorage, directorStorage);
     }
 
     @Test

@@ -5,12 +5,14 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 @Component
 @Slf4j
@@ -102,7 +104,66 @@ public class InMemoryFilmStorage implements FilmStorage {
                 .toList();
     }
 
+    @Override
+    public Map<Long, Set<Long>> getLikesFromAllUsers() {
+        Map<Long, Set<Long>> allLikes = new HashMap<>();
+        for (Film film : films.values()) {
+            Set<Long> likes = film.getLikes();
+            for (Long userId : likes) {
+                allLikes.computeIfAbsent(userId, id -> new HashSet<>())
+                        .add(film.getId());
+            }
+        }
+        return allLikes;
+    }
+
+    @Override
+    public List<Film> getFilmsByIds(Collection<Long> filmIds) {
+        if (filmIds == null || filmIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+        return films.values()
+                .stream()
+                .filter(film -> filmIds.contains(film.getId()))
+                .toList();
+    }
+
     private long getNextId() {
         return ++currentId;
+    }
+
+    public List<Film> searchFilms(String query, String by) {
+        boolean searchByTitle = by.contains("title");
+        boolean searchByDirector = by.contains("director");
+        String lowerQuery = query.toLowerCase();
+
+        return films.values().stream()
+                .filter(film -> {
+                    boolean titleMatch = searchByTitle && film.getName().toLowerCase().contains(lowerQuery);
+                    boolean directorMatch = false;
+                    if (searchByDirector && film.getDirectors() != null) {
+                        directorMatch = film.getDirectors().stream()
+                                .anyMatch(director -> director.getName().toLowerCase().contains(lowerQuery));
+                    }
+                    return titleMatch || directorMatch;
+                })
+                .sorted((f1, f2) -> Integer.compare(f2.getLikes().size(), f1.getLikes().size()))
+                .toList();
+
+    }
+
+    @Override
+    public List<Film> getFilmsByDirector(Integer directorId, String sortBy) {
+        return films.values().stream()
+                .filter(film -> film.getDirectors() != null &&
+                        film.getDirectors().stream().anyMatch(d -> d.getId().equals(directorId)))
+                .sorted((f1, f2) -> {
+                    if ("year".equalsIgnoreCase(sortBy)) {
+                        return f1.getReleaseDate().compareTo(f2.getReleaseDate());
+                    } else {
+                        return Integer.compare(f2.getLikes().size(), f1.getLikes().size());
+                    }
+                })
+                .toList();
     }
 }

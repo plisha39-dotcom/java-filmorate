@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.EventService;
@@ -29,13 +30,11 @@ import java.util.List;
 public class UserController {
     private final UserStorage userStorage;
     private final UserService userService;
-    private final EventService eventService;
 
     @Autowired
-    public UserController(@Qualifier("userDbStorage") UserStorage userStorage, UserService userService, EventService eventService) {
+    public UserController(@Qualifier("userDbStorage") UserStorage userStorage, UserService userService) {
         this.userStorage = userStorage;
         this.userService = userService;
-        this.eventService = eventService;
     }
 
     @GetMapping
@@ -46,7 +45,7 @@ public class UserController {
     @GetMapping("/{id}")
     public User getUserById(@PathVariable Long id) {
         return userStorage.findById(id)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id " + id + " не найден"));
+                          .orElseThrow(() -> new NotFoundException("Пользователь с id " + id + " не найден"));
     }
 
     @GetMapping("/{id}/friends")
@@ -60,10 +59,15 @@ public class UserController {
         return userService.getCommonFriends(id, otherId);
     }
 
+    @GetMapping("/{id}/recommendations")
+    public List<Film> getRecommendations(@PathVariable Long id) {
+        return userService.getRecommendations(id);
+    }
+
     @GetMapping("/{id}/feed")
     public List<Event> getFeed(@PathVariable("id") Long userId) {
         log.info("Получен запрос на ленту событий пользователя с id: {}", userId);
-        return eventService.getFeed(userId);
+        return userService.getFeed(userId);
     }
 
     @PostMapping
