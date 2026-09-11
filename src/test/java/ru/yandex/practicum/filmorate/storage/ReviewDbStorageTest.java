@@ -104,6 +104,7 @@ class ReviewDbStorageTest {
         User author = createTestUser();
         User userWhoLikes = createTestUser();
         Film film = createTestFilm();
+        Film secondFilm = createTestFilm();
 
         Review r1 = new Review();
         r1.setContent("Обычный отзыв");
@@ -120,12 +121,20 @@ class ReviewDbStorageTest {
         reviewStorage.create(r2);
         reviewStorage.addLikeDislike(r2.getReviewId(), userWhoLikes.getId(), true);
 
-        List<Review> reviews = reviewStorage.findReviewsByFilmId(film.getId(), 10);
+        Review r3 = new Review();
+        r3.setContent("Отзыв к другому фильму");
+        r3.setIsPositive(true);
+        r3.setUserId(author.getId());
+        r3.setFilmId(secondFilm.getId());
+        reviewStorage.create(r3);
 
-        assertThat(reviews).hasSize(2);
+        List<Review> reviewsOfFirstFilm = reviewStorage.findReviewsByFilmId(film.getId(), 10);
+        assertThat(reviewsOfFirstFilm).hasSize(2);
+        assertThat(reviewsOfFirstFilm.getFirst().getReviewId()).isEqualTo(r2.getReviewId());
+        assertThat(reviewsOfFirstFilm.get(1).getReviewId()).isEqualTo(r1.getReviewId());
 
-        assertThat(reviews.get(0).getReviewId()).isEqualTo(r2.getReviewId());
-        assertThat(reviews.get(1).getReviewId()).isEqualTo(r1.getReviewId());
+        List<Review> allReviews = reviewStorage.findReviewsByFilmId(null, 10);
+        assertThat(allReviews).hasSize(3);
 
         List<Review> limitedReviews = reviewStorage.findReviewsByFilmId(film.getId(), 1);
         assertThat(limitedReviews).hasSize(1);
