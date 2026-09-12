@@ -3,8 +3,14 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.*;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.EventType;
+import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Friendship;
+import ru.yandex.practicum.filmorate.model.Operation;
+import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -35,6 +41,7 @@ public class UserService {
         this.eventService = eventService;
     }
 
+    @Transactional
     public void addFriend(Long userId, Long friendId) {
         User user = getUserById(userId);
         User friend = getUserById(friendId);
@@ -50,6 +57,7 @@ public class UserService {
         log.info("Пользователь userId={} добавил в друзья friendId={}", user.getId(), friend.getId());
     }
 
+    @Transactional
     public void removeFriend(Long userId, Long friendId) {
         User user = getUserById(userId);
         User friend = getUserById(friendId);
@@ -150,7 +158,7 @@ public class UserService {
 
     public List<Event> getFeed(Long userId) {
         userStorage.findById(userId)
-                .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
+                   .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
         return eventService.getFeed(userId);
     }
 

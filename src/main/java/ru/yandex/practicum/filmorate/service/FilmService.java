@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
@@ -44,6 +45,7 @@ public class FilmService {
         this.genreStorage = genreStorage;
     }
 
+    @Transactional
     public void addLike(Long filmId, Long userId) {
         checkUserExists(userId);
         Film film = getFilmById(filmId);
@@ -52,6 +54,7 @@ public class FilmService {
         log.info("Пользователь userId={} поставил лайк фильму filmId={}", userId, film.getId());
     }
 
+    @Transactional
     public void removeLike(Long filmId, Long userId) {
         checkUserExists(userId);
         Film film = getFilmById(filmId);
@@ -119,11 +122,13 @@ public class FilmService {
         return filmStorage.findAll();
     }
 
+    @Transactional
     public Film create(Film film) {
         validateFilm(film);
         return filmStorage.create(film);
     }
 
+    @Transactional
     public Film update(Film film) {
         validateFilm(film);
         return filmStorage.update(film);

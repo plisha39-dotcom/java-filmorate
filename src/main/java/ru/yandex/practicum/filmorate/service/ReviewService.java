@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.EventType;
@@ -34,6 +35,7 @@ public class ReviewService {
         this.eventService = eventService;
     }
 
+    @Transactional
     public Review create(Review review) {
         checkUserExists(review.getUserId());
         checkFilmExists(review.getFilmId());
@@ -44,6 +46,7 @@ public class ReviewService {
         return createdReview;
     }
 
+    @Transactional
     public Review update(Review review) {
         if (review == null) {
             throw new ValidationException("Отзыв не может быть пустым");
@@ -65,6 +68,7 @@ public class ReviewService {
         return updatedReview;
     }
 
+    @Transactional
     public void delete(Long id) {
         checkReviewExists(id);
         Review deletedReview = getReviewId(id);
@@ -84,24 +88,28 @@ public class ReviewService {
         return reviewStorage.findReviewsByFilmId(filmId, count);
     }
 
+    @Transactional
     public void addLike(Long reviewId, Long userId) {
         checkReviewExists(reviewId);
         checkUserExists(userId);
         reviewStorage.addLikeDislike(reviewId, userId, true);
     }
 
+    @Transactional
     public void addDislike(Long reviewId, Long userId) {
         checkReviewExists(reviewId);
         checkUserExists(userId);
         reviewStorage.addLikeDislike(reviewId, userId, false);
     }
 
+    @Transactional
     public void removeLike(Long reviewId, Long userId) {
         checkReviewExists(reviewId);
         checkUserExists(userId);
         reviewStorage.removeLikeDislike(reviewId, userId, true);
     }
 
+    @Transactional
     public void removeDislike(Long reviewId, Long userId) {
         checkReviewExists(reviewId);
         checkUserExists(userId);
