@@ -7,7 +7,11 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.UserService;
-import ru.yandex.practicum.filmorate.storage.*;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.FriendshipStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
+import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
 
@@ -30,7 +34,7 @@ public class UserControllerTest {
         filmStorage = new InMemoryFilmStorage();
         friendshipStorage = Mockito.mock(FriendshipStorage.class);
         userService = new UserService(userStorage, filmStorage, friendshipStorage, eventService);
-        controller = new UserController(userStorage, userService);
+        controller = new UserController(userService);
     }
 
     @Test

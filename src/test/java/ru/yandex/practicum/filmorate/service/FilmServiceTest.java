@@ -3,14 +3,19 @@ package ru.yandex.practicum.filmorate.service;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.InMemoryFilmStorage;
 import ru.yandex.practicum.filmorate.storage.InMemoryUserStorage;
+import ru.yandex.practicum.filmorate.storage.MpaStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.time.LocalDate;
@@ -19,26 +24,27 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import static org.mockito.Mockito.mock;
-
+@ExtendWith(MockitoExtension.class)
 public class FilmServiceTest {
     private FilmStorage filmStorage;
     private UserStorage userStorage;
     private FilmService filmService;
+    @Mock
     private DirectorStorage directorStorage;
+    @Mock
     private EventService eventService;
+    @Mock
+    private MpaStorage mpaStorage;
+    @Mock
+    private GenreStorage genreStorage;
 
     @BeforeEach
     void setUp() {
         userStorage = new InMemoryUserStorage();
         filmStorage = new InMemoryFilmStorage();
-        directorStorage = mock(DirectorStorage.class);
-        eventService = mock(EventService.class);
-        filmService = new FilmService(userStorage, filmStorage,directorStorage, eventService);
-
+        filmService = new FilmService(userStorage, filmStorage, directorStorage, eventService, mpaStorage, genreStorage);
     }
 
     @Test

@@ -5,8 +5,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.service.EventService;
 import ru.yandex.practicum.filmorate.service.FilmService;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
@@ -42,8 +42,8 @@ public class FilmControllerTest {
         eventService = mock(EventService.class);
         filmStorage = new InMemoryFilmStorage();
         userStorage = new InMemoryUserStorage();
-        filmService = new FilmService(userStorage, filmStorage, directorStorage, eventService);
-        controller = new FilmController(filmStorage, filmService, mpaStorage, genreStorage, directorStorage);
+        filmService = new FilmService(userStorage, filmStorage, directorStorage, eventService, mpaStorage, genreStorage);
+        controller = new FilmController(filmService);
     }
 
     @Test
@@ -150,11 +150,11 @@ public class FilmControllerTest {
                 "Фильм должен быть удален из хранилища");
 
         boolean hasOrphanLikes = filmStorage.findAll().stream()
-                .anyMatch(f -> f.getLikes().contains(1L));
+                                            .anyMatch(f -> f.getLikes().contains(1L));
         assertFalse(hasOrphanLikes, "Связанные лайки должны быть удалены вместе с фильмом");
 
         boolean hasOrphanGenres = filmStorage.findAll().stream()
-                .anyMatch(f -> f.getGenres().stream().anyMatch(g -> g.getId() == 1));
+                                             .anyMatch(f -> f.getGenres().stream().anyMatch(g -> g.getId() == 1));
         assertFalse(hasOrphanGenres, "Связанные жанры должны быть удалены вместе с фильмом");
     }
 

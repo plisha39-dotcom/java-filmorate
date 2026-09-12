@@ -77,7 +77,7 @@ public class UserService {
         return userList;
     }
 
-    private User getUserById(Long userId) {
+    public User getUserById(Long userId) {
         return userStorage.findById(userId)
                           .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
     }
@@ -152,6 +152,27 @@ public class UserService {
         userStorage.findById(userId)
                 .orElseThrow(() -> new NotFoundException("Пользователь с id " + userId + " не найден"));
         return eventService.getFeed(userId);
+    }
+
+    public Collection<User> findAll() {
+        return userStorage.findAll();
+    }
+
+    public User create(User user) {
+        setDefaultName(user);
+        return userStorage.create(user);
+    }
+
+    public User update(User user) {
+        setDefaultName(user);
+        return userStorage.update(user);
+    }
+
+    private void setDefaultName(User user) {
+        if (user.getName() == null || user.getName().isBlank()) {
+            user.setName(user.getLogin());
+            log.debug("Имя пользователя отсутствует, используется логин");
+        }
     }
 }
 
