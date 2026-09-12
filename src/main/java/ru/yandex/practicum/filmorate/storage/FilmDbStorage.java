@@ -223,6 +223,7 @@ public class FilmDbStorage implements FilmStorage {
         try {
             jdbc.update(query, filmId, userId);
         } catch (Exception e) {
+            //игнорируем дубликаты
         }
     }
 
