@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -222,8 +223,8 @@ public class FilmDbStorage implements FilmStorage {
         String query = "INSERT INTO film_likes (film_id, user_id) VALUES (?, ?)";
         try {
             jdbc.update(query, filmId, userId);
-        } catch (Exception e) {
-            //игнорируем дубликаты
+        } catch (DuplicateKeyException e) {
+            // игнорируем повторный лайк
         }
     }
 
@@ -334,6 +335,7 @@ public class FilmDbStorage implements FilmStorage {
     public List<Film> searchFilms(String query, String by) {
         boolean searchByTitle = by.contains("title");
         boolean searchByDirector = by.contains("director");
+        boolean searchByDescription = by.contains("description");
 
         StringBuilder sql = new StringBuilder("""
                     SELECT f.film_id, f.name AS film_name, f.description, f.duration, f.release_date,
@@ -349,14 +351,29 @@ public class FilmDbStorage implements FilmStorage {
         List<Object> params = new ArrayList<>();
 
         if (searchByTitle && searchByDirector) {
-            sql.append(" AND (LOWER(f.name) LIKE LOWER(CONCAT('%', ?, '%')) OR LOWER(d.name) LIKE LOWER(CONCAT('%', ?, '%'))) ");
+            sql.append("""
+                    AND (LOWER(f.name) LIKE LOWER(CONCAT('%', ?, '%'))
+                    OR LOWER(d.name) LIKE LOWER(CONCAT('%', ?, '%')))
+                    """);
             params.add(query);
             params.add(query);
+
         } else if (searchByTitle) {
-            sql.append(" AND LOWER(f.name) LIKE LOWER(CONCAT('%', ?, '%')) ");
+            sql.append("""
+                    AND LOWER(f.name) LIKE LOWER(CONCAT('%', ?, '%'))
+                    """);
             params.add(query);
+
         } else if (searchByDirector) {
-            sql.append(" AND LOWER(d.name) LIKE LOWER(CONCAT('%', ?, '%')) ");
+            sql.append("""
+                    AND LOWER(d.name) LIKE LOWER(CONCAT('%', ?, '%'))
+                    """);
+            params.add(query);
+
+        } else if (searchByDescription) {
+            sql.append("""
+                    AND LOWER(f.description) LIKE LOWER(CONCAT('%', ?, '%'))
+                    """);
             params.add(query);
         }
 

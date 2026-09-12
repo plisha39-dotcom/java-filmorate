@@ -99,11 +99,17 @@ public class FilmService {
         }
 
         String normalizedBy = by.toLowerCase().replaceAll("\\s+", "");
-        if (!normalizedBy.equals("title") &&
-                !normalizedBy.equals("director") &&
-                !normalizedBy.equals("title,director") &&
-                !normalizedBy.equals("director,title")) {
-            throw new ValidationException("Параметр 'by' должен быть 'title', 'director' или 'title,director'");
+        if (!normalizedBy.equals("title")
+                && !normalizedBy.equals("director")
+                && !normalizedBy.equals("description")
+                && !normalizedBy.equals("title,director")
+                && !normalizedBy.equals("director,title")
+                && !normalizedBy.equals("title,description")
+                && !normalizedBy.equals("description,title")) {
+
+            throw new ValidationException(
+                    "Параметр 'by' должен быть 'title', 'director', 'description' или их комбинацией"
+            );
         }
 
         return filmStorage.searchFilms(query, normalizedBy);
