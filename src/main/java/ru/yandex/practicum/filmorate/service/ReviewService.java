@@ -51,27 +51,30 @@ public class ReviewService {
         if (review.getReviewId() == null) {
             throw new ValidationException("Id должен быть указан");
         }
-        checkReviewExists(review.getReviewId());
+        Review oldReview = getReviewId(review.getReviewId());
+        if (review.getUserId() == null) {
+            review.setUserId(oldReview.getUserId());
+        }
+        if (review.getFilmId() == null) {
+            review.setFilmId(oldReview.getFilmId());
+        }
         checkUserExists(review.getUserId());
         checkFilmExists(review.getFilmId());
-
         Review updatedReview = reviewStorage.update(review);
-
-        eventService.createEvent(review.getUserId(), EventType.REVIEW, Operation.UPDATE, review.getReviewId());
-
+        eventService.createEvent(updatedReview.getUserId(), EventType.REVIEW, Operation.UPDATE, updatedReview.getReviewId());
         return updatedReview;
     }
 
     public void delete(Long id) {
         checkReviewExists(id);
         Review deletedReview = getReviewId(id);
-        reviewStorage.delete(id);
         eventService.createEvent(deletedReview.getUserId(), EventType.REVIEW, Operation.REMOVE, id);
+        reviewStorage.delete(id);
     }
 
     public Review getReviewId(Long id) {
         return reviewStorage.findById(id)
-                .orElseThrow(() -> new NotFoundException("Отзыв с id " + id + " не найден"));
+                            .orElseThrow(() -> new NotFoundException("Отзыв с id " + id + " не найден"));
     }
 
     public List<Review> getReviewsByFilmId(Long filmId, int count) {
