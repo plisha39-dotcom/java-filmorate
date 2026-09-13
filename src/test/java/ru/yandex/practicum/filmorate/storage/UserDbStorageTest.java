@@ -6,6 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.jdbc.core.JdbcTemplate;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
@@ -16,10 +18,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 @JdbcTest
 @AutoConfigureTestDatabase
-@Import(UserDbStorage.class)
+@Import({UserDbStorage.class, FilmDbStorage.class})
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 class UserDbStorageTest {
     private final UserDbStorage userStorage;
+    private final FilmDbStorage filmStorage;
+
+    @Autowired
+    private JdbcTemplate jdbc;
 
     @Test
     void testFindUserById() {
@@ -128,5 +134,58 @@ class UserDbStorageTest {
         Optional<User> optionalUser = userStorage.findById(userId);
 
         assertThat(optionalUser).isEmpty();
+    }
+
+    @Test
+    void testDeleteUserCascadesInDb() {
+        User userToDelete = new User();
+        userToDelete.setName("Удаляемый");
+        userToDelete.setLogin("delete_me");
+        userToDelete.setEmail("delete@yandex.ru");
+        userToDelete.setBirthday(LocalDate.of(1999, 1, 15));
+        userStorage.create(userToDelete);
+        Long userIdToDelete = userToDelete.getId();
+
+        User friendUser = new User();
+        friendUser.setName("Друг");
+        friendUser.setLogin("friend");
+        friendUser.setEmail("friend@yandex.ru");
+        friendUser.setBirthday(LocalDate.of(1999, 1, 15));
+        userStorage.create(friendUser);
+        Long friendId = friendUser.getId();
+
+        Film film = new Film();
+        film.setName("Фильм для лайка");
+        film.setDescription("Описание");
+        film.setReleaseDate(LocalDate.of(2014, 11, 6));
+        film.setDuration(120);
+        filmStorage.create(film);
+        Long filmId = film.getId();
+
+        filmStorage.addLike(filmId, userIdToDelete);
+        jdbc.update("insert into friendship (requester_id, addressee_id, status_id) values (?, ?, 1)",
+                userIdToDelete, friendId);
+
+        Integer likesBefore = jdbc.queryForObject(
+                "select count(*) from film_likes where user_id = ?", Integer.class, userIdToDelete);
+        Integer friendshipsBefore = jdbc.queryForObject(
+                "select count(*) from friendship where requester_id = ? or addressee_id = ?",
+                Integer.class, userIdToDelete, userIdToDelete);
+
+        assertThat(likesBefore).isEqualTo(1);
+        assertThat(friendshipsBefore).isEqualTo(1);
+
+        userStorage.delete(userIdToDelete);
+
+        assertThat(userStorage.findById(userIdToDelete)).isEmpty();
+
+        Integer likesAfter = jdbc.queryForObject(
+                "select count(*) from film_likes where user_id = ?", Integer.class, userIdToDelete);
+        Integer friendshipsAfter = jdbc.queryForObject(
+                "select count(*) from friendship where requester_id = ? or addressee_id = ?",
+                Integer.class, userIdToDelete, userIdToDelete);
+
+        assertThat(likesAfter).isZero();
+        assertThat(friendshipsAfter).isZero();
     }
 }

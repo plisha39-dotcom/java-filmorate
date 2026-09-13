@@ -19,7 +19,7 @@ public class UserValidationTest {
 
     @BeforeEach
     void setUp() {
-        validator = validator = Validation
+        validator = Validation
                 .buildDefaultValidatorFactory()
                 .getValidator();
     }

@@ -91,7 +91,8 @@ public class FriendshipDbStorage implements FriendshipStorage {
                 from friendship
                 where status_id = 2 and addressee_id = ?
                 """;
-        List<Long> friendIds = jdbc.query(query, (rs, rowNum) -> rs.getLong("friend_id"), userId, userId);
+        List<Long> friendIds = jdbc.query(query, (rs, rowNum) -> rs.getLong("friend_id"),
+                userId, userId);
         return new HashSet<>(friendIds);
     }
 }
